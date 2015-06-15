@@ -53,6 +53,7 @@ define([
                 get noAnchor() { return "Invalid argument: Flyout anchor element not found in DOM."; },
                 get badPlacement() { return "Invalid argument: Flyout placement should be 'top' (default), 'bottom', 'left', 'right', 'auto', 'autohorizontal', or 'autovertical'."; },
                 get badAlignment() { return "Invalid argument: Flyout alignment should be 'center' (default), 'left', or 'right'."; }
+                get noCoordinates() { return "Invalid argument: Flyout coordinates must contain a valid x,y pair."; },
             };
 
             var createEvent = _Events._createEventProperty;
@@ -661,6 +662,25 @@ define([
                         alignment = "none";
 
                         // Normalize coordinates since they could be a mouse/pointer event object or an (x,y) pair.
+                        if (coordinates.clientX === +coordinates.clientX &&
+                            coordinates.clientY === +coordinates.clientY) {
+
+                            var temp = coordinates;
+
+                            coordinates = {
+                                x: temp.clientX,
+                                y: temp.clientY,
+                            }
+
+                        } else if (coordinates.x !== +coordinates.x ||
+                            coordinates.y !== +coordinates.y) {
+
+                            // We expect an x,y pair of numbers.
+                            throw new _ErrorFromName("WinJS.UI.Flyout.NoCoordinates", strings.noCoordinates);
+
+                        }
+
+
                         var temp = coordinates;
                         coordinates = {
                             x: temp.clientX - _Global.pageXOffset || temp.x,
@@ -1033,10 +1053,10 @@ define([
                         case "cartesian":
                             // Place the top left of the Flyout's border box at the specified coordinates.
                             // If we are in RTL, position the top right of the Flyout's border box instead.
-                            var widthOfPaddingBox = (flyout.totalWidth - flyout.marginLeft - flyout.marginRight);
+                            var widthOfBorderBox = (flyout.totalWidth - flyout.marginLeft - flyout.marginRight);
                             var rtl = _Global.getComputedStyle(this._element).direction === "rtl";
-                            var adjustForRTL = rtl? widthOfPaddingBox: 0; 
-                            
+                            var adjustForRTL = rtl ? widthOfBorderBox : 0;
+
                             this._nextTop = this._currentCoordinates.y - flyout.marginTop;
                             this._nextLeft = this._currentCoordinates.x - flyout.marginLeft - adjustForRTL;
 
