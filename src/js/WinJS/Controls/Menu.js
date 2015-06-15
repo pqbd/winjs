@@ -260,8 +260,16 @@ define([
                 showAt: function (coordinates) {
                     /// <signature helpKeyword="WinJS.UI.Menu.show">
                     /// <summary locid="WinJS.UI.Menu.show">
-                    /// TODO ///////////////////////////////////////
+                    /// Shows the Menu, if hidden, at the specified (x,y) coordinates.
                     /// </summary>
+                    /// <signature helpKeyword="WinJS.UI.Menu.showAt">
+                    /// <summary locid="WinJS.UI.Menu.showAt">
+                    /// Shows the Menu, if hidden, at the specified (x,y) coordinates.
+                    /// </summary>
+                    /// <param name="coordinates" type="Object" locid="WinJS.UI.Menu.showAt_p:coordinates">
+                    /// An Object specifying the (X,Y) position to render the top left corner of the Menu. commands to show. 
+                    /// The coordinates object may be a MouseEventObj, or an Object in the shape of {x:number, y:number}.
+                    /// </param>
                     /// </signature>
                     this._writeProfilerMark("show,StartTM"); // The corresponding "stop" profiler mark is handled in _Overlay._baseEndShow().
                     this._showAt(coordinates);

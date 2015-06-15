@@ -4870,9 +4870,9 @@ declare module WinJS.UI {
 
         /**
          * Shows the Flyout, if hidden, regardless of other states, top and left aligned at the location of pointer event object,
-         * @param pointerEventObj Required. The PointerEvent Object specifying where to show the Flyout.
+         * @param pointerEventObj Required. The MouseEvent Object specifying where to show the Flyout.
         **/
-        showAt(pointerEventObj: PointerEvent): void;
+        showAt(mouseEventObj: MouseEvent): void;
         
         //#endregion Methods
 
@@ -6868,9 +6868,9 @@ declare module WinJS.UI {
 
         /**
          * Shows the Menu, if hidden, regardless of other states, top and left aligned at the location of pointer event object,
-         * @param pointerEventObj Required. The PointerEvent Object specifying where to show the Menu.
+         * @param mouseEventObj Required. The MouseEvent Object specifying where to show the Menu.
         **/
-        showAt(pointerEventObj: PointerEvent): void;
+        showAt(mouseEventObj: MouseEvent): void;
 
 
         /**
