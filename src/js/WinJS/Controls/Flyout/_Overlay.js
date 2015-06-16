@@ -30,7 +30,7 @@ define([
          .win-menu-containsflyoutcommand button.win-command-flyout-activated:before", [
         { name: "background-color", value: _Accents.ColorTypes.accent },
         { name: "border-color", value: _Accents.ColorTypes.accent },
-    ]);
+         ]);
 
     _Accents.createAccentRule(".win-flyout, .win-settingsflyout", [{ name: "border-color", value: _Accents.ColorTypes.accent }]);
 
@@ -352,6 +352,9 @@ define([
                             this._queuedToHide = [];
                         }
 
+                        // Do our derived classes show stuff 
+                        this._beforeShow()
+
                         // Send our "beforeShow" event
                         this._sendEvent(_Overlay.beforeShow);
 
@@ -372,8 +375,13 @@ define([
                     return false;
                 },
 
+                _beforeShow: function _Overlay_beforeShow() {
+                    // Nothing by default
+                },
+
                 // Flyout in particular will need to measure our positioning.
                 _findPosition: function _Overlay_findPosition() {
+                    // Nothing by default
                 },
 
                 _baseEndShow: function _Overlay_baseEndShow() {
@@ -386,9 +394,6 @@ define([
 
                     this._element.winAnimating = "";
 
-                    // Do our derived classes show stuff
-                    this._endShow();
-
                     // We're shown now
                     if (this._doNext === "show") {
                         this._doNext = "";
@@ -400,11 +405,6 @@ define([
 
                     // If we had something queued, do that
                     Scheduler.schedule(this._checkDoNext, Scheduler.Priority.normal, this, "WinJS.UI._Overlay._checkDoNext");
-
-                },
-
-                _endShow: function _Overlay_endShow() {
-                    // Nothing by default
                 },
 
                 _baseHide: function _Overlay_baseHide() {
@@ -499,7 +499,7 @@ define([
                     // Nothing by default
                 },
 
-                _afterHide: function _Overlay_afterHide(){
+                _afterHide: function _Overlay_afterHide() {
                     // Nothing by default
                 },
 

@@ -298,10 +298,21 @@ define([
                     _ElementUtilities.removeClass(this.element, _Constants.menuTouchSpacingClass);
                 },
 
-                _findPosition: function Menu_findPosition() {
+                _beforeShow: function Menu_beforeShow() {
                     // Make sure menu commands display correctly
+                    if (!_ElementUtilities.hasClass(this.element, _Constants.menuMouseSpacingClass) && !_ElementUtilities.hasClass(this.element, _Constants.menuTouchSpacingClass)) {
+                        // The Menu's spacing shouldn't change while it is already shown. Only
+                        // add a spacing class if it doesn't already have one. It will get
+                        // removed after the Menu hides.
+                        _ElementUtilities.addClass(
+                            this.element,
+                            Flyout.Flyout._cascadeManager.inputType === _KeyboardBehavior._InputTypes.mouse || Flyout.Flyout._cascadeManager.inputType === _KeyboardBehavior._InputTypes.keyboard ?
+                                _Constants.menuMouseSpacingClass :
+                                _Constants.menuTouchSpacingClass
+                        );
+                    }
+
                     this._checkMenuCommands();
-                    Flyout.Flyout.prototype._findPosition.call(this);
                 },
 
                 _addCommand: function Menu_addCommand(command) {
@@ -338,19 +349,7 @@ define([
 
                 _checkMenuCommands: function Menu_checkMenuCommands() {
                     // Make sure menu commands display correctly.
-                    // Called when we show/hide commands or by _findPosition when the Menu is showing.
-
-                    if (!_ElementUtilities.hasClass(this.element, _Constants.menuMouseSpacingClass) && !_ElementUtilities.hasClass(this.element, _Constants.menuTouchSpacingClass)) {
-                        // The Menu's spacing shouldn't change while it is already shown. Only
-                        // add a spacing class if it doesn't already have one. It will get
-                        // removed after the Menu hides.
-                        _ElementUtilities.addClass(
-                            this.element,
-                            Flyout.Flyout._cascadeManager.inputType === _KeyboardBehavior._InputTypes.mouse || Flyout.Flyout._cascadeManager.inputType === _KeyboardBehavior._InputTypes.keyboard ?
-                                _Constants.menuMouseSpacingClass :
-                                _Constants.menuTouchSpacingClass
-                        );
-                    }
+                    // Called when we show/hide commands or by _findPosition when the Menu is showing
 
                     var menuCommands = this._element.querySelectorAll(".win-command"),
                         hasToggleCommands = false,
