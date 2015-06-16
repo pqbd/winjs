@@ -677,15 +677,8 @@ define([
 
                             // We expect an x,y pair of numbers.
                             throw new _ErrorFromName("WinJS.UI.Flyout.NoCoordinates", strings.noCoordinates);
-
                         }
 
-
-                        var temp = coordinates;
-                        coordinates = {
-                            x: temp.clientX - _Global.pageXOffset || temp.x,
-                            y: temp.clientY - _Global.pageYOffset || temp.y
-                        };
                     } else {
                         // Else we are showing relative to our anchor element. Anchor element is required.
 

@@ -475,6 +475,9 @@ define([
                         this._doNext = "";
                     }
 
+                    // Do our derived classes hide stuff
+                    this._afterHide();
+
                     // After hiding, send our "afterHide" event
                     this._sendEvent(_Overlay.afterHide);
                     this._writeProfilerMark("hide,StopTM"); // Overlay writes the stop profiler mark for all of its derived classes.
@@ -493,6 +496,10 @@ define([
                 // focus move events. _beforeEndHide is a good hook for the Overlay to move focus
                 // elsewhere before its DOM element gets hidden.
                 _beforeEndHide: function _Overlay_beforeEndHide() {
+                    // Nothing by default
+                },
+
+                _afterHide: function _Overlay_afterHide(){
                     // Nothing by default
                 },
 
