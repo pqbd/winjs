@@ -359,7 +359,7 @@ define([
                         this._sendEvent(_Overlay.beforeShow);
 
                         // Need to measure
-                        this._findPosition();
+                        this._ensurePosition();
 
                         // Make sure it's visible, and fully opaque.
                         // Do the popup thing, sending event afterward.
@@ -380,7 +380,7 @@ define([
                 },
 
                 // Flyout in particular will need to measure our positioning.
-                _findPosition: function _Overlay_findPosition() {
+                _ensurePosition: function _Overlay_ensurePosition() {
                     // Nothing by default
                 },
 

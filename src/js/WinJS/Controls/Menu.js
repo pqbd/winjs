@@ -287,7 +287,7 @@ define([
 
                 _checkMenuCommands: function Menu_checkMenuCommands() {
                     // Make sure menu commands display correctly.
-                    // Called when we show/hide commands or by _findPosition when the Menu is showing
+                    // Called when we show/hide commands or by _ensurePosition when the Menu is showing
 
                     var menuCommands = this._element.querySelectorAll(".win-command"),
                         hasToggleCommands = false,
