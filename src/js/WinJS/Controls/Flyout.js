@@ -412,7 +412,6 @@ define([
                             return PositionRequests.AnchorPositioning.Type;
                         }
                     },
-                    getTopLeft: function AnchorPositioning_getTopLeft() { },
                 },
                 {
                    Type: {
@@ -452,7 +451,6 @@ define([
                             return PositionRequests.CoordinatePositioning.Type;
                         }
                     },
-                    getTopLeft: function CoordinatePositioning_getTopLeft() { },
                 }, {
                     Type: {
                         get: function CoordinatePositioning_Type_get() {
