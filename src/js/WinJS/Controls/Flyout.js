@@ -381,7 +381,7 @@ define([
 
             var PositionRequests = {
                 AnchorPositioning: function Anchor_ctor(anchor, placement, alignment) {
-                    this.anchor; 
+                    this.anchor;
                     this.placement;
                     this.alignment;
                     this.coordinates = null;
@@ -943,11 +943,11 @@ define([
                         }
                     }
 
-                    if (this._requestedPosition.type === PositionRequests.AnchorPositioning.type) {
-                        var anchorRawRectangle,
-                            flyout = {},
-                            anchor = {};
+                    var anchorRawRectangle,
+                        flyout = {},
+                        anchor = {};
 
+                    if (this._requestedPosition.type === PositionRequests.AnchorPositioning.type) {
                         try {
                             // Anchor needs to be in DOM.
                             anchorRawRectangle = this._requestedPosition.anchor.getBoundingClientRect();
