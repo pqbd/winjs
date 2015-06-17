@@ -254,12 +254,17 @@ define([
                     //  Collapse the entire cascadingStack to start a new cascade.
                     // FINALLY:
                     //  add flyoutToAdd to the end of the cascading stack. Monitor it for events.
-                    var indexOfParentFlyout = this.indexOfElement(flyoutToAdd._requestedPosition.anchor);
-                    if (indexOfParentFlyout >= 0) {
-                        this.collapseFlyout(this.getAt(indexOfParentFlyout + 1));
-                    } else {
-                        this.collapseAll();
+
+                    var collapseFn = this.collapseAll;
+                    if (flyoutToAdd._requestedPosition.type === PositionRequests.AnchorPositioning.Type) {
+                        var indexOfParentFlyout = this.indexOfElement(flyoutToAdd._requestedPosition.anchor);
+                        if (indexOfParentFlyout >= 0) {
+                            collapseFn = function collapseFn() {
+                                this.collapseFlyout(this.getAt(indexOfParentFlyout + 1));
+                            };
+                        }
                     }
+                    collapseFn.call(this);
 
                     flyoutToAdd.element.addEventListener("keydown", this._handleKeyDownInCascade_bound, false);
                     this._cascadingStack.push(flyoutToAdd);
@@ -380,13 +385,8 @@ define([
             };
 
             var PositionRequests = {
-                AnchorPositioning: function Anchor_ctor(anchor, placement, alignment) {
-                    this.anchor;
-                    this.placement;
-                    this.alignment;
+                AnchorPositioning: WinJS.Class.define(function AnchorPositioning_ctor(anchor, placement, alignment) {
                     this.coordinates = null;
-                    //this.getTopLeft = function Anchor_getTopLeft() {
-                    //}
 
                     // We want to position relative to an anchor element. Anchor element is required.
 
@@ -403,14 +403,29 @@ define([
                     }
 
                     this.anchor = anchor;
+                    this.placement = placement;
+                    this.alignment = alignment;
                 },
-                CoordinatePositioning: function Coordinates_ctor(coordinates, anchor) {
+                {
+                    type: {
+                        get: function AnchorPositioning_type_get() {
+                            return PositionRequests.AnchorPositioning.Type;
+                        }
+                    },
+                    getTopLeft: function AnchorPositioning_getTopLeft() { },
+                },
+                {
+                   Type: {
+                        get: function AnchorPositioning_Type_get() {
+                            return "anchor";
+                        }
+                    },
+                }),
+                CoordinatePositioning: WinJS.Class.define(function CoordinatePositioning_ctor(coordinates) {
                     this.anchor = null;
-                    this.placement = PositionRequests.CoordinatePositioning.type;
+                    this.placement = PositionRequests.CoordinatePositioning.Type;
                     this.alignment = "none";
                     this.coordinates;
-                    //this.getTopLeft = function Coordinates_getTopLeft() {
-                    //}
 
                     // Normalize coordinates since they could be a mouse/pointer event object or an (x,y) pair.
                     if (coordinates.clientX === +coordinates.clientX &&
@@ -431,10 +446,21 @@ define([
                     }
 
                     this.coordinates = coordinates;
-                },
+                }, {
+                    type: {
+                        get: function CoordinatePositioning_type_get() {
+                            return PositionRequests.CoordinatePositioning.Type;
+                        }
+                    },
+                    getTopLeft: function CoordinatePositioning_getTopLeft() { },
+                }, {
+                    Type: {
+                        get: function CoordinatePositioning_Type_get() {
+                            return "coordinate";
+                        }
+                    }
+                }),
             }
-            PositionRequests.AnchorPositioning.prototype.type = "anchor";
-            PositionRequests.CoordinatePositioning.prototype.type = "coordinate";
 
             var Flyout = _Base.Class.derive(_Overlay._Overlay, function Flyout_ctor(element, options) {
                 /// <signature helpKeyword="WinJS.UI.Flyout.Flyout">
@@ -947,7 +973,7 @@ define([
                         flyout = {},
                         anchor = {};
 
-                    if (this._requestedPosition.type === PositionRequests.AnchorPositioning.type) {
+                    if (this._requestedPosition.type === PositionRequests.AnchorPositioning.Type) {
                         try {
                             // Anchor needs to be in DOM.
                             anchorRawRectangle = this._requestedPosition.anchor.getBoundingClientRect();
@@ -1055,7 +1081,7 @@ define([
                                 }
                             }
                             break;
-                        case PositionRequests.CoordinatePositioning.type:
+                        case PositionRequests.CoordinatePositioning.Type:
                             // Place the top left of the Flyout's border box at the specified coordinates.
                             // If we are in RTL, position the top right of the Flyout's border box instead.
                             var currentCoordinates = this._requestedPosition.coordinates;

@@ -298,9 +298,9 @@ define([
                     set: function (hidden) {
                         var currentlyHidden = this.hidden;
                         if (!hidden && currentlyHidden) {
-                            this._show();
+                            this.show();
                         } else if (hidden && !currentlyHidden) {
-                            this._hide();
+                            this.hide();
                         }
                     }
                 },
