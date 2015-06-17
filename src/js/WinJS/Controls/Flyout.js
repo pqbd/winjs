@@ -254,7 +254,7 @@ define([
                     //  Collapse the entire cascadingStack to start a new cascade.
                     // FINALLY:
                     //  add flyoutToAdd to the end of the cascading stack. Monitor it for events.
-                    var indexOfParentFlyout = this.indexOfElement(flyoutToAdd._currentAnchor);
+                    var indexOfParentFlyout = this.indexOfElement(flyoutToAdd._requestedPosition.anchor);
                     if (indexOfParentFlyout >= 0) {
                         this.collapseFlyout(this.getAt(indexOfParentFlyout + 1));
                     } else {
@@ -378,6 +378,63 @@ define([
                 left: { top: "0px", left: "50px", keyframe: "WinJS-showFlyoutLeft" },
                 right: { top: "0px", left: "-50px", keyframe: "WinJS-showFlyoutRight" },
             };
+
+            var PositionRequests = {
+                AnchorPositioning: function Anchor_ctor(anchor, placement, alignment) {
+                    this.anchor; 
+                    this.placement;
+                    this.alignment;
+                    this.coordinates = null;
+                    //this.getTopLeft = function Anchor_getTopLeft() {
+                    //}
+
+                    // We want to position relative to an anchor element. Anchor element is required.
+
+                    // Dereference the anchor if necessary
+                    if (typeof anchor === "string") {
+                        anchor = _Global.document.getElementById(anchor);
+                    } else if (anchor && anchor.element) {
+                        anchor = anchor.element;
+                    }
+
+                    if (!anchor) {
+                        // We expect an anchor
+                        throw new _ErrorFromName("WinJS.UI.Flyout.NoAnchor", strings.noAnchor);
+                    }
+
+                    this.anchor = anchor;
+                },
+                CoordinatePositioning: function Coordinates_ctor(coordinates, anchor) {
+                    this.anchor = null;
+                    this.placement = PositionRequests.CoordinatePositioning.type;
+                    this.alignment = "none";
+                    this.coordinates;
+                    //this.getTopLeft = function Coordinates_getTopLeft() {
+                    //}
+
+                    // Normalize coordinates since they could be a mouse/pointer event object or an (x,y) pair.
+                    if (coordinates.clientX === +coordinates.clientX &&
+                        coordinates.clientY === +coordinates.clientY) {
+
+                        var temp = coordinates;
+
+                        coordinates = {
+                            x: temp.clientX,
+                            y: temp.clientY,
+                        }
+
+                    } else if (coordinates.x !== +coordinates.x ||
+                        coordinates.y !== +coordinates.y) {
+
+                        // We expect an x,y pair of numbers.
+                        throw new _ErrorFromName("WinJS.UI.Flyout.NoCoordinates", strings.noCoordinates);
+                    }
+
+                    this.coordinates = coordinates;
+                },
+            }
+            PositionRequests.AnchorPositioning.prototype.type = "anchor";
+            PositionRequests.CoordinatePositioning.prototype.type = "coordinate";
 
             var Flyout = _Base.Class.derive(_Overlay._Overlay, function Flyout_ctor(element, options) {
                 /// <signature helpKeyword="WinJS.UI.Flyout.Flyout">
@@ -590,11 +647,25 @@ define([
                     /// <compatibleWith platform="Windows" minVersion="8.0"/>
                     /// </signature>
                     this._writeProfilerMark("show,StartTM"); // The corresponding "stop" profiler mark is handled in _Overlay._baseEndShow().
-                    this._show(anchor, placement, alignment);
+
+                    // Pick up defaults
+                    if (!anchor) {
+                        anchor = this._anchor;
+                    }
+                    if (!placement) {
+                        placement = this._placement;
+                    }
+                    if (!alignment) {
+                        alignment = this._alignment;
+                    }
+
+                    this._requestedPosition = new PositionRequests.AnchorPositioning(anchor, placement, alignment);
+
+                    this._show();
                 },
 
-                _show: function Flyout_show(anchor, placement, alignment, coordinates) {
-                    this._baseFlyoutShow(anchor, placement, alignment, null);
+                _show: function Flyout_show() {
+                    this._baseFlyoutShow();
                 },
 
                 /// <signature helpKeyword="WinJS.UI.Flyout.showAt">
@@ -608,11 +679,10 @@ define([
                 /// </signature>
                 showAt: function Flyout_showAt(coordinates) {
                     this._writeProfilerMark("show,StartTM"); // The corresponding "stop" profiler mark is handled in _Overlay._baseEndShow().
-                    this._showAt(coordinates);
-                },
 
-                _showAt: function Flyout_show(coordinates) {
-                    this._baseFlyoutShow(null, "cartesian", "none", coordinates);
+                    this._requestedPosition = new PositionRequests.CoordinatePositioning(coordinates);
+
+                    this._show();
                 },
 
                 hide: function () {
@@ -647,70 +717,6 @@ define([
                         // Don't do anything.
                         return;
                     }
-
-                    // Store the function call with the parameters used to "show" the flyout so that we can repeat
-                    // the operation later if something forces us to cancel and resume later.
-                    var that = this;
-                    this._currentShowFn = function () { that._baseFlyoutShow(anchor, placement, alignment, coordinates); };
-
-                    if (coordinates) {
-                        // If we are showing via arbitrary coordinates, then we don't require an anchor to show
-                        // ourselves. If an anchor hasn't been assigned just use the body.
-                        anchor = anchor || this._anchor || _Global.document.body;
-
-                        placement = "cartesian";
-                        alignment = "none";
-
-                        // Normalize coordinates since they could be a mouse/pointer event object or an (x,y) pair.
-                        if (coordinates.clientX === +coordinates.clientX &&
-                            coordinates.clientY === +coordinates.clientY) {
-
-                            var temp = coordinates;
-
-                            coordinates = {
-                                x: temp.clientX,
-                                y: temp.clientY,
-                            }
-
-                        } else if (coordinates.x !== +coordinates.x ||
-                            coordinates.y !== +coordinates.y) {
-
-                            // We expect an x,y pair of numbers.
-                            throw new _ErrorFromName("WinJS.UI.Flyout.NoCoordinates", strings.noCoordinates);
-                        }
-
-                    } else {
-                        // Else we are showing relative to our anchor element. Anchor element is required.
-
-                        // Pick up defaults
-                        if (!anchor) {
-                            anchor = this._anchor;
-                        }
-                        if (!placement) {
-                            placement = this._placement;
-                        }
-                        if (!alignment) {
-                            alignment = this._alignment;
-                        }
-
-                        // Dereference the anchor if necessary
-                        if (typeof anchor === "string") {
-                            anchor = _Global.document.getElementById(anchor);
-                        } else if (anchor && anchor.element) {
-                            anchor = anchor.element;
-                        }
-
-                        if (!anchor) {
-                            // We expect an anchor
-                            throw new _ErrorFromName("WinJS.UI.Flyout.NoAnchor", strings.noAnchor);
-                        }
-                    }
-
-                    // Remember current values in case we need to stop and resume.
-                    this._currentAnchor = anchor;
-                    this._currentPlacement = placement;
-                    this._currentAlignment = alignment;
-                    this._currentCoordinates = coordinates;
 
                     // If we're animating (eg baseShow is going to fail), or the cascadeManager is in the middle of 
                     // updating the cascade, then don't mess up our current state.
@@ -775,7 +781,7 @@ define([
                     // Remove old height restrictions and scrolling.
                     this._clearAdjustedStyles();
 
-                    this._setAlignment(this._currentAlignment);
+                    this._setAlignment();
 
                     // Set up the new position, and prep the offset for showPopup.
                     this._getTopLeft();
@@ -823,12 +829,13 @@ define([
                 // * bottom - position explicitly below the anchor, shrinking and adding scrollbar as needed.
                 // * left - position left of the anchor, shrinking and adding a vertical scrollbar as needed.
                 // * right - position right of the anchor, shrinking and adding a vertical scroolbar as needed.
-                // * cartesian - Top left corner of the Flyout border box is rendered at the specified pointerEventObj
-                //   or any object in the form of {x, y}.
+                // * _cascade - Private placement used by MenuCommand._activateFlyoutCommand.
+                // * _coordinate - Private placement used by Flyout.showAt()
+                //   The top left corner of the Flyout border box is rendered at the specified mouseEventObj
+                //   or any object in the form of {x: number, y: number}.
                 // * auto - Automatic placement.
                 // * autohorizontal - Automatic placement (only left or right).
                 // * autovertical - Automatic placement (only top or bottom).
-                // * _cascade - Private placement used by MenuCommand._activateFlyoutCommand
                 // Auto tests the height of the anchor and the flyout.  For consistency in orientation, we imagine
                 // that the anchor is placed in the vertical center of the display.  If the flyout would fit above
                 // that centered anchor, then we will place the flyout vertically in relation to the anchor, otherwise
@@ -936,24 +943,27 @@ define([
                         }
                     }
 
-                    var anchorRawRectangle,
-                        flyout = {},
-                        anchor = {};
+                    if (this._requestedPosition.type === PositionRequests.AnchorPositioning.type) {
+                        var anchorRawRectangle,
+                            flyout = {},
+                            anchor = {};
 
-                    try {
-                        anchorRawRectangle = this._currentAnchor.getBoundingClientRect();
-                    }
-                    catch (e) {
-                        throw new _ErrorFromName("WinJS.UI.Flyout.NoAnchor", strings.noAnchor);
-                    }
+                        try {
+                            // Anchor needs to be in DOM.
+                            anchorRawRectangle = this._requestedPosition.anchor.getBoundingClientRect();
+                        }
+                        catch (e) {
+                            throw new _ErrorFromName("WinJS.UI.Flyout.NoAnchor", strings.noAnchor);
+                        }
 
-                    // Adjust for the anchor's margins.
-                    anchor.top = anchorRawRectangle.top;
-                    anchor.bottom = anchorRawRectangle.bottom;
-                    anchor.left = anchorRawRectangle.left;
-                    anchor.right = anchorRawRectangle.right;
-                    anchor.height = anchor.bottom - anchor.top;
-                    anchor.width = anchor.right - anchor.left;
+                        // Adjust for the anchor's margins.
+                        anchor.top = anchorRawRectangle.top;
+                        anchor.bottom = anchorRawRectangle.bottom;
+                        anchor.left = anchorRawRectangle.left;
+                        anchor.right = anchorRawRectangle.right;
+                        anchor.height = anchor.bottom - anchor.top;
+                        anchor.width = anchor.right - anchor.left;
+                    }
 
                     // Get our flyout and margins, note that getDimension calls
                     // window.getComputedStyle, which ensures layout is updated.
@@ -968,8 +978,10 @@ define([
                     this._verticalMarginBorderPadding = (flyout.totalHeight - flyout.contentHeight);
                     this._adjustedHeight = flyout.contentHeight;
 
-                    // Check fit for requested this._currentPlacement, doing fallback if necessary
-                    switch (this._currentPlacement) {
+                    var currentAlignment = this._requestedPosition.alignment;
+
+                    // Check fit for requested placement, doing fallback if necessary
+                    switch (this._requestedPosition.placement) {
                         case "top":
                             if (!fitTop(anchor.top, flyout)) {
                                 // Didn't fit, needs scrollbar
@@ -977,7 +989,7 @@ define([
                                 this._doesScroll = true;
                                 this._adjustedHeight = spaceAbove(anchor) - this._verticalMarginBorderPadding;
                             }
-                            alignHorizontally(anchor, flyout, this._currentAlignment);
+                            alignHorizontally(anchor, flyout, currentAlignment);
                             break;
                         case "bottom":
                             if (!fitBottom(anchor.bottom, flyout)) {
@@ -986,7 +998,7 @@ define([
                                 this._doesScroll = true;
                                 this._adjustedHeight = spaceBelow(anchor) - this._verticalMarginBorderPadding;
                             }
-                            alignHorizontally(anchor, flyout, this._currentAlignment);
+                            alignHorizontally(anchor, flyout, currentAlignment);
                             break;
                         case "left":
                             if (!fitLeft(anchor.left, flyout)) {
@@ -1010,7 +1022,7 @@ define([
                                     configureVerticalWithScroll(anchor);
                                 }
                             }
-                            alignHorizontally(anchor, flyout, this._currentAlignment);
+                            alignHorizontally(anchor, flyout, currentAlignment);
                             break;
                         case "autohorizontal":
                             if (!fitLeft(anchor.left, flyout)) {
@@ -1030,28 +1042,29 @@ define([
                                     // Didn't fit above (preferred), so go below.
                                     fitBottom(anchor.bottom, flyout);
                                 }
-                                alignHorizontally(anchor, flyout, this._currentAlignment);
+                                alignHorizontally(anchor, flyout, currentAlignment);
                             } else {
                                 // Won't fit above or below, try a side
                                 if (!fitLeft(anchor.left, flyout) &&
                                     !fitRight(anchor.right, flyout)) {
                                     // Didn't fit left or right either
                                     configureVerticalWithScroll(anchor);
-                                    alignHorizontally(anchor, flyout, this._currentAlignment);
+                                    alignHorizontally(anchor, flyout, currentAlignment);
                                 } else {
                                     centerVertically(anchor, flyout);
                                 }
                             }
                             break;
-                        case "cartesian":
+                        case PositionRequests.CoordinatePositioning.type:
                             // Place the top left of the Flyout's border box at the specified coordinates.
                             // If we are in RTL, position the top right of the Flyout's border box instead.
+                            var currentCoordinates = this._requestedPosition.coordinates;
                             var widthOfBorderBox = (flyout.totalWidth - flyout.marginLeft - flyout.marginRight);
                             var rtl = _Global.getComputedStyle(this._element).direction === "rtl";
                             var adjustForRTL = rtl ? widthOfBorderBox : 0;
 
-                            this._nextTop = this._currentCoordinates.y - flyout.marginTop;
-                            this._nextLeft = this._currentCoordinates.x - flyout.marginLeft - adjustForRTL;
+                            this._nextTop = currentCoordinates.y - flyout.marginTop;
+                            this._nextLeft = currentCoordinates.x - flyout.marginLeft - adjustForRTL;
 
                             if (this._nextTop < 0) {
                                 // Overran top, pin to top edge.
@@ -1117,7 +1130,7 @@ define([
 
                             break;
                         default:
-                            // Not a legal this._currentPlacement value
+                            // Not a legal this._requestPosition.placement value
                             throw new _ErrorFromName("WinJS.UI.Flyout.BadPlacement", strings.badPlacement);
                     }
                 },
@@ -1141,9 +1154,9 @@ define([
                     _ElementUtilities.removeClass(this._element, "win-leftalign");
                 },
 
-                _setAlignment: function Flyout_setAlignment(alignment) {
+                _setAlignment: function Flyout_setAlignment() {
                     // Alignment
-                    switch (alignment) {
+                    switch (this._requestedPosition.alignment) {
                         case "left":
                             _ElementUtilities.addClass(this._element, "win-leftalign");
                             break;

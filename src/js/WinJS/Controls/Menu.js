@@ -224,67 +224,67 @@ define([
                     this._showOnlyCommands(commands, true);
                 },
 
-                show: function (anchor, placement, alignment) {
-                    /// <signature helpKeyword="WinJS.UI.Menu.show">
-                    /// <summary locid="WinJS.UI.Menu.show">
-                    /// Shows the Menu, if hidden, regardless of other states.
-                    /// </summary>
-                    /// <param name="anchor" type="HTMLElement" domElement="true" locid="WinJS.UI.Menu.show_p:anchor">
-                    /// The DOM element, or ID of a DOM element,  to anchor the Menu. This parameter overrides the anchor property for this method call only.
-                    /// </param>
-                    /// <param name="placement" type="object" domElement="false" locid="WinJS.UI.Menu.show_p:placement">
-                    /// The placement of the Menu to the anchor: 'auto' (default), 'autohorizontal', 'autovertical', 'top', 'bottom', 'left', or 'right'. This parameter overrides the placement
-                    /// property for this method call only.
-                    /// </param>
-                    /// <param name="alignment" type="object" domElement="false" locid="WinJS.UI.Menu.show_p:alignment">
-                    /// For 'top' or 'bottom' placement, the alignment of the Menu to the anchor's edge: 'center' (default), 'left', or 'right'. This parameter
-                    /// overrides the alignment property for this method call only.
-                    /// </param>
-                    /// <compatibleWith platform="Windows" minVersion="8.0"/>
-                    /// </signature>
-                    // Just call private version to make appbar flags happy
-                    this._writeProfilerMark("show,StartTM"); // The corresponding "stop" profiler mark is handled in _Overlay._baseEndShow().
-                    this._show(anchor, placement, alignment);
-                },
+                //show: function (anchor, placement, alignment) {
+                //    /// <signature helpKeyword="WinJS.UI.Menu.show">
+                //    /// <summary locid="WinJS.UI.Menu.show">
+                //    /// Shows the Menu, if hidden, regardless of other states.
+                //    /// </summary>
+                //    /// <param name="anchor" type="HTMLElement" domElement="true" locid="WinJS.UI.Menu.show_p:anchor">
+                //    /// The DOM element, or ID of a DOM element,  to anchor the Menu. This parameter overrides the anchor property for this method call only.
+                //    /// </param>
+                //    /// <param name="placement" type="object" domElement="false" locid="WinJS.UI.Menu.show_p:placement">
+                //    /// The placement of the Menu to the anchor: 'auto' (default), 'autohorizontal', 'autovertical', 'top', 'bottom', 'left', or 'right'. This parameter overrides the placement
+                //    /// property for this method call only.
+                //    /// </param>
+                //    /// <param name="alignment" type="object" domElement="false" locid="WinJS.UI.Menu.show_p:alignment">
+                //    /// For 'top' or 'bottom' placement, the alignment of the Menu to the anchor's edge: 'center' (default), 'left', or 'right'. This parameter
+                //    /// overrides the alignment property for this method call only.
+                //    /// </param>
+                //    /// <compatibleWith platform="Windows" minVersion="8.0"/>
+                //    /// </signature>
+                //    // Just call private version to make appbar flags happy
+                //    this._writeProfilerMark("show,StartTM"); // The corresponding "stop" profiler mark is handled in _Overlay._baseEndShow().
+                //    this._show(anchor, placement, alignment);
+                //},
 
-                _show: function Menu_show(anchor, placement, alignment) {
-                    // Call flyout show 
-                    this._baseFlyoutShow(anchor, placement, alignment, null);
+                //_show: function Menu_show(anchor, placement, alignment) {
+                //    // Call flyout show 
+                //    this._baseFlyoutShow(anchor, placement, alignment, null);
 
-                    // Additionally, Menu will need to adjust MenuCommand layouts based on the various 
-                    // types of commands visible in our Menu, but only after we send the beforeshow
-                    // event, so the developer has a chance to show or hide more commands.
-                    // _findPosition() will make that call.
-                },
+                //    // Additionally, Menu will need to adjust MenuCommand layouts based on the various 
+                //    // types of commands visible in our Menu, but only after we send the beforeshow
+                //    // event, so the developer has a chance to show or hide more commands.
+                //    // _findPosition() will make that call.
+                //},
 
-                showAt: function (coordinates) {
-                    /// <signature helpKeyword="WinJS.UI.Menu.show">
-                    /// <summary locid="WinJS.UI.Menu.show">
-                    /// Shows the Menu, if hidden, at the specified (x,y) coordinates.
-                    /// </summary>
-                    /// <signature helpKeyword="WinJS.UI.Menu.showAt">
-                    /// <summary locid="WinJS.UI.Menu.showAt">
-                    /// Shows the Menu, if hidden, at the specified (x,y) coordinates.
-                    /// </summary>
-                    /// <param name="coordinates" type="Object" locid="WinJS.UI.Menu.showAt_p:coordinates">
-                    /// An Object specifying the (X,Y) position to render the top left corner of the Menu. commands to show. 
-                    /// The coordinates object may be a MouseEventObj, or an Object in the shape of {x:number, y:number}.
-                    /// </param>
-                    /// </signature>
-                    this._writeProfilerMark("show,StartTM"); // The corresponding "stop" profiler mark is handled in _Overlay._baseEndShow().
-                    this._showAt(coordinates);
-                },
+                //showAt: function (coordinates) {
+                //    /// <signature helpKeyword="WinJS.UI.Menu.show">
+                //    /// <summary locid="WinJS.UI.Menu.show">
+                //    /// Shows the Menu, if hidden, at the specified (x,y) coordinates.
+                //    /// </summary>
+                //    /// <signature helpKeyword="WinJS.UI.Menu.showAt">
+                //    /// <summary locid="WinJS.UI.Menu.showAt">
+                //    /// Shows the Menu, if hidden, at the specified (x,y) coordinates.
+                //    /// </summary>
+                //    /// <param name="coordinates" type="Object" locid="WinJS.UI.Menu.showAt_p:coordinates">
+                //    /// An Object specifying the (X,Y) position to render the top left corner of the Menu. commands to show. 
+                //    /// The coordinates object may be a MouseEventObj, or an Object in the shape of {x:number, y:number}.
+                //    /// </param>
+                //    /// </signature>
+                //    this._writeProfilerMark("show,StartTM"); // The corresponding "stop" profiler mark is handled in _Overlay._baseEndShow().
+                //    this._showAt(coordinates);
+                //},
 
-                _showAt: function Menu_showAt(coordinates) {
+                //_showAt: function Menu_showAt(coordinates) {
 
-                    // Call flyout showAt
-                    this._baseFlyoutShow(null, "cartesian", "none", coordinates);
+                //    // Call flyout showAt
+                //    this._baseFlyoutShow(null, "cartesian", "none", coordinates);
                     
-                    // Additionally, Menu will need to adjust MenuCommand layouts based on the various 
-                    // types of commands visible in our Menu, but only after we send the beforeshow
-                    // event, so the developer has a chance to show or hide more commands.
-                    // Flyout's _findPosition will make that call.
-                },
+                //    // Additionally, Menu will need to adjust MenuCommand layouts based on the various 
+                //    // types of commands visible in our Menu, but only after we send the beforeshow
+                //    // event, so the developer has a chance to show or hide more commands.
+                //    // Flyout's _findPosition will make that call.
+                //},
 
                 _hide: function Menu_hide() {
                     if (this._hoverPromise) {
