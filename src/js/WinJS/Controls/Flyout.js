@@ -269,8 +269,8 @@ define([
                     //  add flyoutToAdd to the end of the cascading stack. Monitor it for events.
 
                     var collapseFn = this.collapseAll;
-                    if (flyoutToAdd._requestedPosition.type === PositionRequests.AnchorPositioning.Type) {
-                        var indexOfParentFlyout = this.indexOfElement(flyoutToAdd._requestedPosition.anchor);
+                    if (flyoutToAdd._positionRequest instanceof PositionRequests.AnchorPositioning) {
+                        var indexOfParentFlyout = this.indexOfElement(flyoutToAdd._positionRequest.anchor);
                         if (indexOfParentFlyout >= 0) {
                             collapseFn = function collapseFn() {
                                 this.collapseFlyout(this.getAt(indexOfParentFlyout + 1));
@@ -399,7 +399,6 @@ define([
 
             var PositionRequests = {
                 AnchorPositioning: WinJS.Class.define(function AnchorPositioning_ctor(anchor, placement, alignment) {
-                    this.coordinates = null;
 
                     // We want to position relative to an anchor element. Anchor element is required.
 
@@ -420,12 +419,6 @@ define([
                     this.alignment = alignment;
                 },
                 {
-                    type: {
-                        get: function AnchorPositioning_type_get() {
-                            return PositionRequests.AnchorPositioning.Type;
-                        }
-                    },
-
                     getTopLeft: function AnchorPositioning_getTopLeft(flyout) {
                         // This determines our positioning.  We have8 modes, the 1st four are explicit, the last 4 are automatic:
                         // * top - position explicitly on the top of the anchor, shrinking and adding scrollbar as needed.
@@ -695,20 +688,8 @@ define([
                             verticalMarginBorderPadding: verticalMarginBorderPadding,
                         };
                     },
-
-                },
-            {
-                // Statics
-                Type: {
-                    get: function AnchorPositioning_Type_get() {
-                        return "anchor";
-                    }
-                },
-            }),
+                }),
                 CoordinatePositioning: WinJS.Class.define(function CoordinatePositioning_ctor(coordinates) {
-                    this.anchor = null;
-                    this.placement = PositionRequests.CoordinatePositioning.Type;
-                    this.alignment = "none";
                     this.coordinates;
 
                     // Normalize coordinates since they could be a mouse/pointer event object or an (x,y) pair.
@@ -731,11 +712,6 @@ define([
 
                     this.coordinates = coordinates;
                 }, {
-                    type: {
-                        get: function CoordinatePositioning_type_get() {
-                            return PositionRequests.CoordinatePositioning.Type;
-                        }
-                    },
                     getTopLeft: function CoordinatePositioning_getTopLeft(flyout) {
                         // This determines our positioning.
                         // The top left corner of the Flyout border box is rendered at the specified mouseEventObj
@@ -743,19 +719,6 @@ define([
 
                         var flyoutEl = flyout.element;
                         var flyoutMeasurements = measureElement(flyoutEl);
-
-                        //// Get our flyout and margins, note that getDimension calls
-                        //// window.getComputedStyle, which ensures layout is updated.
-                        //flyoutMeasurements.marginTop = getDimension(flyoutEl, "marginTop");
-                        //flyoutMeasurements.marginBottom = getDimension(flyoutEl, "marginBottom");
-                        //flyoutMeasurements.marginLeft = getDimension(flyoutEl, "marginLeft");
-                        //flyoutMeasurements.marginRight = getDimension(flyoutEl, "marginRight");
-                        //flyoutMeasurements.totalWidth = _ElementUtilities.getTotalWidth(flyoutEl);
-                        //flyoutMeasurements.totalHeight = _ElementUtilities.getTotalHeight(flyoutEl);
-                        //flyoutMeasurements.contentWidth = _ElementUtilities.getContentWidth(flyoutEl);
-                        //flyoutMeasurements.contentHeight = _ElementUtilities.getContentHeight(flyoutEl);
-
-                        // Check fit for requested placement, doing fallback if necessary
 
                         // Place the top left of the Flyout's border box at the specified coordinates.
                         // If we are in RTL, position the top right of the Flyout's border box instead.
@@ -794,13 +757,6 @@ define([
                             animOffset: AnimationOffsets.top,
                         }
                     },
-                }, {
-                    // Statics
-                    Type: {
-                        get: function CoordinatePositioning_Type_get() {
-                            return "coordinate";
-                        }
-                    }
                 }),
             }
 
@@ -1027,7 +983,7 @@ define([
                         alignment = this._alignment;
                     }
 
-                    this._requestedPosition = new PositionRequests.AnchorPositioning(anchor, placement, alignment);
+                    this._positionRequest = new PositionRequests.AnchorPositioning(anchor, placement, alignment);
 
                     this._show();
                 },
@@ -1048,7 +1004,7 @@ define([
                 showAt: function Flyout_showAt(coordinates) {
                     this._writeProfilerMark("show,StartTM"); // The corresponding "stop" profiler mark is handled in _Overlay._baseEndShow().
 
-                    this._requestedPosition = new PositionRequests.CoordinatePositioning(coordinates);
+                    this._positionRequest = new PositionRequests.CoordinatePositioning(coordinates);
 
                     this._show();
                 },
@@ -1148,7 +1104,7 @@ define([
                     this._setAlignment();
 
                     // Set up the new position, and prep the offset for showPopup.
-                    this._currentPosition = this._requestedPosition.getTopLeft(this);
+                    this._currentPosition = this._positionRequest.getTopLeft(this);
 
                     // Adjust position
                     if (this._currentPosition.top < 0) {
@@ -1211,7 +1167,7 @@ define([
 
                 _setAlignment: function Flyout_setAlignment() {
                     // Alignment
-                    switch (this._requestedPosition.alignment) {
+                    switch (this._positionRequest.alignment) {
                         case "left":
                             _ElementUtilities.addClass(this._element, "win-leftalign");
                             break;
