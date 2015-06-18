@@ -456,18 +456,18 @@ define([
                         var doesScroll;
                         var nextAnimOffset;
                         var verticalMarginBorderPadding = (flyoutMeasurements.totalHeight - flyoutMeasurements.contentHeight);
-                        var adjustedHeight = flyoutMeasurements.contentHeight;
+                        var nextContentHeight = flyoutMeasurements.contentHeight;
 
                         function configureVerticalWithScroll(anchorBorderBox) {
                             // Won't fit top or bottom. Pick the one with the most space and add a scrollbar.
                             if (topHasMoreRoom(anchorBorderBox)) {
                                 // Top
-                                adjustedHeight = spaceAbove(anchorBorderBox) - verticalMarginBorderPadding;
+                                nextContentHeight = spaceAbove(anchorBorderBox) - verticalMarginBorderPadding;
                                 nextTop = _Overlay._Overlay._keyboardInfo._visibleDocTop;
                                 nextAnimOffset = AnimationOffsets.top;
                             } else {
                                 // Bottom
-                                adjustedHeight = spaceBelow(anchorBorderBox) - verticalMarginBorderPadding;
+                                nextContentHeight = spaceBelow(anchorBorderBox) - verticalMarginBorderPadding;
                                 nextTop = _Constants.pinToBottomEdge;
                                 nextAnimOffset = AnimationOffsets.bottom;
                             }
@@ -560,7 +560,7 @@ define([
                                     // Didn't fit, needs scrollbar
                                     nextTop = _Overlay._Overlay._keyboardInfo._visibleDocTop;
                                     doesScroll = true;
-                                    adjustedHeight = spaceAbove(anchorBorderBox) - verticalMarginBorderPadding;
+                                    nextContentHeight = spaceAbove(anchorBorderBox) - verticalMarginBorderPadding;
                                 }
                                 alignHorizontally(anchorBorderBox, flyoutMeasurements, currentAlignment);
                                 break;
@@ -569,7 +569,7 @@ define([
                                     // Didn't fit, needs scrollbar
                                     nextTop = _Constants.pinToBottomEdge;
                                     doesScroll = true;
-                                    adjustedHeight = spaceBelow(anchorBorderBox) - verticalMarginBorderPadding;
+                                    nextContentHeight = spaceBelow(anchorBorderBox) - verticalMarginBorderPadding;
                                 }
                                 alignHorizontally(anchorBorderBox, flyoutMeasurements, currentAlignment);
                                 break;
@@ -684,15 +684,13 @@ define([
                             top: nextTop,
                             animOffset: nextAnimOffset,
                             doesScroll: doesScroll,
-                            adjustedHeight: adjustedHeight,
+                            contentHeight: nextContentHeight,
                             verticalMarginBorderPadding: verticalMarginBorderPadding,
                         };
                     },
                 }),
                 CoordinatePositioning: WinJS.Class.define(function CoordinatePositioning_ctor(coordinates) {
-                    this.coordinates;
-
-                    // Normalize coordinates since they could be a mouse/pointer event object or an (x,y) pair.
+                    // Normalize coordinates since they could be a mouse/pointer event object or an {x,y} pair.
                     if (coordinates.clientX === +coordinates.clientX &&
                         coordinates.clientY === +coordinates.clientY) {
 
@@ -709,7 +707,6 @@ define([
                         // We expect an x,y pair of numbers.
                         throw new _ErrorFromName("WinJS.UI.Flyout.NoCoordinates", strings.noCoordinates);
                     }
-
                     this.coordinates = coordinates;
                 }, {
                     getTopLeft: function CoordinatePositioning_getTopLeft(flyout) {
@@ -728,14 +725,14 @@ define([
                         var adjustForRTL = rtl ? widthOfBorderBox : 0;
 
                         var verticalMarginBorderPadding = (flyoutMeasurements.totalHeight - flyoutMeasurements.contentHeight);
-                        var adjustedHeight = flyoutMeasurements.contentHeight;
+                        var nextContentHeight = flyoutMeasurements.contentHeight;
                         var nextTop = currentCoordinates.y - flyoutMeasurements.marginTop;
                         var nextLeft = currentCoordinates.x - flyoutMeasurements.marginLeft - adjustForRTL;
 
                         if (nextTop < 0) {
                             // Overran top, pin to top edge.
                             nextTop = 0;
-                        } else if (nextTop + adjustedHeight + verticalMarginBorderPadding > _Overlay._Overlay._keyboardInfo._visibleDocBottom) {
+                        } else if (nextTop + flyoutMeasurements.totalHeight > _Overlay._Overlay._keyboardInfo._visibleDocBottom) {
                             // Overran bottom, pin to bottom edge.
                             nextTop = _Constants.pinToBottomEdge;
                         }
@@ -752,7 +749,7 @@ define([
                             left: nextLeft,
                             top: nextTop,
                             verticalMaringBorderPadding: verticalMarginBorderPadding,
-                            adjustedHeight: adjustedHeight,
+                            contentHeight: nextContentHeight,
                             doesScroll: false,
                             animOffset: AnimationOffsets.top,
                         }
@@ -973,17 +970,11 @@ define([
                     this._writeProfilerMark("show,StartTM"); // The corresponding "stop" profiler mark is handled in _Overlay._baseEndShow().
 
                     // Pick up defaults
-                    if (!anchor) {
-                        anchor = this._anchor;
-                    }
-                    if (!placement) {
-                        placement = this._placement;
-                    }
-                    if (!alignment) {
-                        alignment = this._alignment;
-                    }
-
-                    this._positionRequest = new PositionRequests.AnchorPositioning(anchor, placement, alignment);
+                    this._positionRequest = new PositionRequests.AnchorPositioning(
+                        anchor || this._anchor,
+                        placement || this._placement,
+                        alignment || this._alignment
+                    );
 
                     this._show();
                 },
@@ -1130,7 +1121,7 @@ define([
                     if (this._currentPosition.doesScroll) {
                         _ElementUtilities.addClass(this._element, _Constants.scrollsClass);
                         this._lastMaxHeight = this._element.style.maxHeight;
-                        this._element.style.maxHeight = this._currentPosition.adjustedHeight + "px";
+                        this._element.style.maxHeight = this._currentPosition.contentHeight + "px";
                     }
 
                     // May need to adjust if the IHM is showing.
@@ -1230,12 +1221,12 @@ define([
 
                     var keyboardMovedUs = false;
                     var viewportHeight = _Overlay._Overlay._keyboardInfo._visibleDocHeight;
-                    var adjustedMarginBoxHeight = this._currentPosition.adjustedHeight + this._currentPosition.verticalMarginBorderPadding;
+                    var adjustedMarginBoxHeight = this._currentPosition.contentHeight + this._currentPosition.verticalMarginBorderPadding;
                     if (adjustedMarginBoxHeight > viewportHeight) {
                         // The Flyout is now too tall to fit in the viewport, pin to top and adjust height.
                         keyboardMovedUs = true;
                         this._currentPosition.top = _Constants.pinToBottomEdge;
-                        this._currentPosition.adjustedHeight = viewportHeight - this._currentPosition.verticalMarginBorderPadding;
+                        this._currentPosition.contentHeight = viewportHeight - this._currentPosition.verticalMarginBorderPadding;
                         this._currentPosition.doesScroll = true;
                     } else if (this._currentPosition.top >= 0 &&
                         this._currentPosition.top + adjustedMarginBoxHeight > _Overlay._Overlay._keyboardInfo._visibleDocBottom) {
@@ -1260,7 +1251,7 @@ define([
                             this._lastMaxHeight = this._element.style.maxHeight;
                         }
                         // Adjust height
-                        this._element.style.maxHeight = this._currentPosition.adjustedHeight + "px";
+                        this._element.style.maxHeight = this._currentPosition.contentHeight + "px";
                     }
 
                     // Update top/bottom
