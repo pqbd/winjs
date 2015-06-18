@@ -748,7 +748,7 @@ define([
                         return {
                             left: nextLeft,
                             top: nextTop,
-                            verticalMaringBorderPadding: verticalMarginBorderPadding,
+                            verticalMarginBorderPadding: verticalMarginBorderPadding,
                             contentHeight: nextContentHeight,
                             doesScroll: false,
                             animOffset: AnimationOffsets.top,
