@@ -447,14 +447,23 @@ define([
                         // All three auto placements will add a vertical scrollbar if necessary.
                         // 
 
-                        var that = this;
+                        var flyoutMeasurements = measureElement(flyout.element);
+                        var anchorBorderBox;
+
+                        try {
+                            // Anchor needs to be in DOM.
+                            anchorBorderBox = this.anchor.getBoundingClientRect();
+                        }
+                        catch (e) {
+                            throw new _ErrorFromName("WinJS.UI.Flyout.NoAnchor", strings.noAnchor);
+                        }
 
                         var nextLeft;
                         var nextTop;
                         var doesScroll;
-                        var verticalMarginPadding;
-                        var adjustedHeight;
-                        var nextAnimOffset
+                        var nextAnimOffset;
+                        var verticalMarginBorderPadding = (flyoutMeasurements.totalHeight - flyoutMeasurements.contentHeight);
+                        var adjustedHeight = flyoutMeasurements.contentHeight;
 
                         function configureVerticalWithScroll(anchorBorderBox) {
                             // Won't fit top or bottom. Pick the one with the most space and add a scrollbar.
@@ -548,19 +557,6 @@ define([
                                 nextLeft = _Constants.pinToRightEdge;
                             }
                         }
-
-                        var flyoutMeasurements = measureElement(flyout.element);
-                        var anchorBorderBox;
-
-                        try {
-                            // Anchor needs to be in DOM.
-                            anchorBorderBox = this.anchor.getBoundingClientRect();
-                        }
-                        catch (e) {
-                            throw new _ErrorFromName("WinJS.UI.Flyout.NoAnchor", strings.noAnchor);
-                        }
-
-
 
                         var currentAlignment = this.alignment;
 
@@ -696,7 +692,7 @@ define([
                             animOffset: nextAnimOffset,
                             doesScroll: doesScroll,
                             adjustedHeight: adjustedHeight,
-                            verticalMarginBorderPadding: verticalMarginPadding,
+                            verticalMarginBorderPadding: verticalMarginBorderPadding,
                         };
                     },
 
