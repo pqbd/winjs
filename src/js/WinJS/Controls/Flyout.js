@@ -419,8 +419,8 @@ define([
                     this.alignment = alignment;
                 },
                 {
-                    getTopLeft: function AnchorPositioning_getTopLeft(flyout) {
-                        // This determines our positioning.  We have8 modes, the 1st four are explicit, the last 4 are automatic:
+                    getTopLeft: function AnchorPositioning_getTopLeft(flyoutMeasurements, isRTL) {
+                        // This determines our positioning.  We have 8 placements, the 1st four are explicit, the last 4 are automatic:
                         // * top - position explicitly on the top of the anchor, shrinking and adding scrollbar as needed.
                         // * bottom - position explicitly below the anchor, shrinking and adding scrollbar as needed.
                         // * left - position left of the anchor, shrinking and adding a vertical scrollbar as needed.
@@ -440,7 +440,6 @@ define([
                         // All three auto placements will add a vertical scrollbar if necessary.
                         // 
 
-                        var flyoutMeasurements = measureElement(flyout.element);
                         var anchorBorderBox;
 
                         try {
@@ -647,7 +646,6 @@ define([
                                 // the subMenu is placed to the left of the parent menu.
                                 // LASTRESORT: When there is not enough room to fit a subMenu on either side of the anchor,
                                 // the subMenu is pinned to the right edge of the window.
-                                var rtl = _Global.getComputedStyle(flyout._element).direction === "rtl";
 
                                 // Cascading Menus should overlap their ancestor menu by 4 pixels and we have a unit test to 
                                 // verify that behavior. Because we don't have access to the ancestor flyout we need to specify
@@ -659,7 +657,7 @@ define([
                                 var beginRight = anchorBorderBox.right - flyoutMeasurements.marginLeft - pixelsToOverlapAnchor;
                                 var beginLeft = anchorBorderBox.left + flyoutMeasurements.marginRight + pixelsToOverlapAnchor;
 
-                                if (rtl) {
+                                if (isRTL) {
                                     if (!fitLeft(beginLeft, flyoutMeasurements) && !fitRight(beginRight, flyoutMeasurements)) {
                                         // Doesn't fit on either side, pin to the left edge.
                                         nextLeft = 0;
@@ -709,20 +707,16 @@ define([
                     }
                     this.coordinates = coordinates;
                 }, {
-                    getTopLeft: function CoordinatePositioning_getTopLeft(flyout) {
+                    getTopLeft: function CoordinatePositioning_getTopLeft(flyoutMeasurements, isRTL) {
                         // This determines our positioning.
-                        // The top left corner of the Flyout border box is rendered at the specified mouseEventObj
-                        // or any object in the form of {x: number, y: number}.
+                        // The top left corner of the Flyout border box is rendered at the specified coordinates
 
-                        var flyoutEl = flyout.element;
-                        var flyoutMeasurements = measureElement(flyoutEl);
 
                         // Place the top left of the Flyout's border box at the specified coordinates.
                         // If we are in RTL, position the top right of the Flyout's border box instead.
                         var currentCoordinates = this.coordinates;
                         var widthOfBorderBox = (flyoutMeasurements.totalWidth - flyoutMeasurements.marginLeft - flyoutMeasurements.marginRight);
-                        var rtl = _Global.getComputedStyle(flyoutEl).direction === "rtl";
-                        var adjustForRTL = rtl ? widthOfBorderBox : 0;
+                        var adjustForRTL = isRTL ? widthOfBorderBox : 0;
 
                         var verticalMarginBorderPadding = (flyoutMeasurements.totalHeight - flyoutMeasurements.contentHeight);
                         var nextContentHeight = flyoutMeasurements.contentHeight;
@@ -1027,7 +1021,7 @@ define([
                     Flyout._cascadeManager.flyoutHidden(this);
                 },
 
-                _baseFlyoutShow: function Flyout_baseFlyoutShow(anchor, placement, alignment, coordinates) {
+                _baseFlyoutShow: function Flyout_baseFlyoutShow() {
                     if (this.disabled || this._disposed) {
                         // Don't do anything.
                         return;
@@ -1095,7 +1089,9 @@ define([
                     this._setAlignment();
 
                     // Set up the new position, and prep the offset for showPopup.
-                    this._currentPosition = this._positionRequest.getTopLeft(this);
+                    var flyoutMeasurements = measureElement(this._element);
+                    var isRTL = _Global.getComputedStyle(this._element).direction === "rtl";
+                    this._currentPosition = this._positionRequest.getTopLeft(flyoutMeasurements, isRTL);
 
                     // Adjust position
                     if (this._currentPosition.top < 0) {
@@ -1136,7 +1132,6 @@ define([
                 },
 
 
-
                 _clearAdjustedStyles: function Flyout_clearAdjustedStyles() {
                     // Move to 0,0 in case it is off screen, so that it lays out at a reasonable size
                     this._element.style.top = "0px";
@@ -1167,6 +1162,7 @@ define([
                             break;
                         case "center":
                         case "none":
+                        default:
                             break;
                     }
                 },
