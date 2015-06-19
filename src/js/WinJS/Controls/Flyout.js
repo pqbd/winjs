@@ -717,7 +717,6 @@ define([
                         // This determines our positioning.
                         // The top left corner of the Flyout border box is rendered at the specified coordinates
 
-
                         // Place the top left of the Flyout's border box at the specified coordinates.
                         // If we are in RTL, position the top right of the Flyout's border box instead.
                         var currentCoordinates = this.coordinates;
