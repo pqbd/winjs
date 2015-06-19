@@ -50,7 +50,7 @@ var strings = {
     get pivotViewportAriaLabel() { return _Resources._getWinJSString("ui/pivotViewportAriaLabel").value; }
 };
 
-var supportsSnap = !!(_ElementUtilities._supportsSnapPoints && _Global["HTMLElement"].prototype.msZoomTo);
+var supportsSnap = !!(_ElementUtilities._supportsSnapPoints && _Global["HTMLElement"].prototype.msZoomTo && "inertiaDestinationX" in _Global["MSManipulationEvent"].prototype);
 var PT_MOUSE = _ElementUtilities._MSPointerEvent.MSPOINTER_TYPE_MOUSE || "mouse";
 var PT_TOUCH = _ElementUtilities._MSPointerEvent.MSPOINTER_TYPE_TOUCH || "touch";
 var Keys = _ElementUtilities.Key;
@@ -242,6 +242,7 @@ export class Pivot {
         this._updatePointerType = this._updatePointerType.bind(this);
 
         this._id = element.id || _ElementUtilities._uniqueID(element);
+        this._writeProfilerMark("constructor,StartTM");
 
         // Attaching JS control to DOM element
         element["winControl"] = this;
@@ -531,7 +532,7 @@ export class Pivot {
             this._headersState.handleNavigation(goPrev, index, this._selectedIndex);
             this._selectedIndex = index;
 
-            return Promise.join([newItem._process(), this._hidePivotItemAnimation, Promise.timeout(100)]).then(() => {
+            return Promise.join([newItem._process(), this._hidePivotItemAnimation, Promise.timeout()]).then(() => {
                 if (this._disposed || this._loadPromise !== thisLoadPromise) {
                     return;
                 }
@@ -541,6 +542,7 @@ export class Pivot {
                         return;
                     }
                     this._loadPromise = Promise.wrap<any>();
+                    this._writeProfilerMark("itemAnimationStop,info");
                     this._fireEvent(_EventNames.itemAnimationEnd, true, false, null);
                 });
             });
@@ -881,7 +883,7 @@ export class Pivot {
             return;
         }
 
-        if (e.currentState === 2 /* Inertia */) {
+        if (e.currentState === _ElementUtilities._MSManipulationEvent.MS_MANIPULATION_STATE_INERTIA) {
             var delta = e["inertiaDestinationX"] - this._getViewportWidth();
             if (delta > 0) {
                 this._goNext();
