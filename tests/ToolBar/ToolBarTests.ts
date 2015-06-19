@@ -420,7 +420,7 @@ module CorsicaTests {
         testResizeHandler() {
             // Verify that the resize handler knows how to correctly re-layout commands if the CommandingSurface width has changed.
             // - while the control is closed.
-            // - while the contrminol is opened.
+            // - while the control is opened.
             // Typically the resizeHandler is only called by the window resize event.
 
             // Test all closedDisplayModes https://github.com/winjs/winjs/issues/1183
@@ -429,16 +429,16 @@ module CorsicaTests {
                 var prefix = "closedDisplayMode: " + mode + ", ";
 
                 // Make sure everything will fit.
-                var toolBarelement = document.createElement("DIV");
-                toolBarelement.style.width = "1000px";
-                this._element.appendChild(toolBarelement);
+                var toolBarElement = document.createElement("DIV");
+                toolBarElement.style.width = "1000px";
+                this._element.appendChild(toolBarElement);
 
                 var data = new WinJS.Binding.List([
                     new Command(null, { type: _Constants.typeButton, label: "opt 1" }),
                     new Command(null, { type: _Constants.typeButton, label: "opt 2" }),
                     new Command(null, { type: _Constants.typeButton, label: "sec opt 1", section: _Constants.secondaryCommandSection })
                 ]);
-                var toolBar = new ToolBar(toolBarelement, {
+                var toolBar = new ToolBar(toolBarElement, {
                     data: data,
                     opened: false,
                     closedDisplayMode: mode,
@@ -481,7 +481,7 @@ module CorsicaTests {
 
                 // Increase element size while opened, and verify the resizeHandler has reflowed all primary commands
                 // back into the action area.
-                toolBarelement.style.width = "1000px";
+                toolBarElement.style.width = "1000px";
                 WinJS.Utilities._resizeNotifier._handleResize();
 
                 LiveUnit.Assert.areEqual(2,

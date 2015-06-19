@@ -67,7 +67,7 @@ interface ICommandingSurface_UpdateDomImpl {
     currentLayoutStage: number;
     update(): void;
     dataDirty(): void;
-    meaurementsDirty(): void;
+    measurementsDirty(): void;
     layoutDirty(): void;
 };
 
@@ -137,7 +137,6 @@ export class _CommandingSurface {
     private _refreshPending: boolean;
     private _rtl: boolean;
     private _disposed: boolean;
-    private _nextLayoutStage: number;
     private _initializedSignal: _Signal<any>;
     private _isOpenedMode: boolean;
     private _overflowAlignmentOffset: number;
@@ -353,7 +352,7 @@ export class _CommandingSurface {
     forceLayout(): void {
         /// Forces the CommandingSurface to update its layout. Use this function when the window did not change 
         /// size, but the container of the CommandingSurface changed size.
-        this._updateDomImpl.meaurementsDirty();
+        this._updateDomImpl.measurementsDirty();
         this._machine.updateDom();
     }
 
@@ -697,10 +696,10 @@ export class _CommandingSurface {
     }
 
     private _canMeasure() {
-        return _Global.document.body.contains(this._dom.root) && this._dom.actionArea.offsetWidth > 0 &&
-            (this._updateDomImpl.renderedState.isOpenedMode ||
+        return (this._updateDomImpl.renderedState.isOpenedMode ||
             this._updateDomImpl.renderedState.closedDisplayMode === ClosedDisplayMode.compact ||
-            this._updateDomImpl.renderedState.closedDisplayMode === ClosedDisplayMode.full)
+            this._updateDomImpl.renderedState.closedDisplayMode === ClosedDisplayMode.full) &&
+            _Global.document.body.contains(this._dom.root) && this._dom.actionArea.offsetWidth > 0;
     }
 
     private _resizeHandler() {
@@ -712,7 +711,7 @@ export class _CommandingSurface {
                 this._machine.updateDom();
             }
         } else {
-            this._updateDomImpl.meaurementsDirty();
+            this._updateDomImpl.measurementsDirty();
         }
     }
 
@@ -774,7 +773,7 @@ export class _CommandingSurface {
         // State private to _renderDisplayMode. No other method should make use of it.
         //
         // Nothing has been rendered yet so these are all initialized to undefined. Because
-        // they are undefined, the first time _updateDomImpl is called, they will all be
+        // they are undefined, the first time _updateDomImpl.update is called, they will all be
         // rendered.
         var _renderedState = {
             closedDisplayMode: <string>undefined,
@@ -877,14 +876,14 @@ export class _CommandingSurface {
             get currentLayoutStage() {
                 return _currentLayoutStage;
             },
-            update(): void{
+            update(): void {
                 _renderDisplayMode();
                 _updateCommands()
             },
             dataDirty: () => {
                 _currentLayoutStage = Math.max(CommandLayoutPipeline.newDataStage, _currentLayoutStage);
             },
-            meaurementsDirty: () => {
+            measurementsDirty: () => {
                 _currentLayoutStage = Math.max(CommandLayoutPipeline.measuringStage, _currentLayoutStage);
             },
             layoutDirty: () => {
