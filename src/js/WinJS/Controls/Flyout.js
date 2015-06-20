@@ -419,7 +419,7 @@ define([
                     this.alignment = alignment;
                 },
                 {
-                    getTopLeft: function AnchorPositioning_getTopLeft(flyoutMeasurements, isRTL) {
+                    getTopLeft: function AnchorPositioning_getTopLeft(flyoutMeasurements, isRtl) {
                         // This determines our positioning.  We have 8 placements, the 1st four are explicit, the last 4 are automatic:
                         // * top - position explicitly on the top of the anchor, shrinking and adding scrollbar as needed.
                         // * bottom - position explicitly below the anchor, shrinking and adding scrollbar as needed.
@@ -663,7 +663,7 @@ define([
                                 var beginRight = anchorBorderBox.right - flyoutMeasurements.marginLeft - horizontalOverlap;
                                 var beginLeft = anchorBorderBox.left + flyoutMeasurements.marginRight + horizontalOverlap;
 
-                                if (isRTL) {
+                                if (isRtl) {
                                     if (!fitLeft(beginLeft, flyoutMeasurements) && !fitRight(beginRight, flyoutMeasurements)) {
                                         // Doesn't fit on either side, pin to the left edge.
                                         nextLeft = 0;
@@ -713,7 +713,7 @@ define([
                     }
                     this.coordinates = coordinates;
                 }, {
-                    getTopLeft: function CoordinatePositioning_getTopLeft(flyoutMeasurements, isRTL) {
+                    getTopLeft: function CoordinatePositioning_getTopLeft(flyoutMeasurements, isRtl) {
                         // This determines our positioning.
                         // The top left corner of the Flyout border box is rendered at the specified coordinates
 
@@ -721,7 +721,7 @@ define([
                         // If we are in RTL, position the top right of the Flyout's border box instead.
                         var currentCoordinates = this.coordinates;
                         var widthOfBorderBox = (flyoutMeasurements.totalWidth - flyoutMeasurements.marginLeft - flyoutMeasurements.marginRight);
-                        var adjustForRTL = isRTL ? widthOfBorderBox : 0;
+                        var adjustForRTL = isRtl ? widthOfBorderBox : 0;
 
                         var verticalMarginBorderPadding = (flyoutMeasurements.totalHeight - flyoutMeasurements.contentHeight);
                         var nextContentHeight = flyoutMeasurements.contentHeight;
@@ -1095,8 +1095,8 @@ define([
 
                     // Set up the new position, and prep the offset for showPopup.
                     var flyoutMeasurements = measureElement(this._element);
-                    var isRTL = _Global.getComputedStyle(this._element).direction === "rtl";
-                    this._currentPosition = this._positionRequest.getTopLeft(flyoutMeasurements, isRTL);
+                    var isRtl = _Global.getComputedStyle(this._element).direction === "rtl";
+                    this._currentPosition = this._positionRequest.getTopLeft(flyoutMeasurements, isRtl);
 
                     // Adjust position
                     if (this._currentPosition.top < 0) {

@@ -87,10 +87,10 @@ export declare class Flyout {
     showAt(coordinates: { x: number; y: number; }): void;
     
     /**
-     * Shows the Flyout, if hidden, regardless of other states, top and left aligned at the location of pointer event object,
-     * @param pointerEventObj Required. The PointerEvent Object specifying where to show the Flyout.
+     * Shows the Flyout, if hidden, regardless of other states, top and left aligned at the location of mouse event object,
+     * @param mouseEventObj Required. The MouseEvent Object specifying where to show the Flyout.
     **/
-    showAt(pointerEventObj: PointerEvent): void;
+    showAt(mouseEventObj: MouseEvent): void;
 
     //#endregion Methods
 
