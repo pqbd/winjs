@@ -64,7 +64,6 @@ interface ICommandingSurface_UpdateDomImpl {
         overflowDirection: string;
         overflowAlignmentOffset: number;
     };
-    currentLayoutStage: number;
     update(): void;
     dataDirty(): void;
     measurementsDirty(): void;
@@ -867,14 +866,11 @@ export class _CommandingSurface {
         return {
             get renderedState() {
                 return {
-                    closedDisplayMode: _renderedState.closedDisplayMode,
-                    isOpenedMode: _renderedState.isOpenedMode,
-                    overflowDirection: _renderedState.overflowDirection,
-                    overflowAlignmentOffset: _renderedState.overflowAlignmentOffset,
+                    get closedDisplayMode() { return _renderedState.closedDisplayMode },
+                    get isOpenedMode() { return _renderedState.isOpenedMode },
+                    get overflowDirection() { return _renderedState.overflowDirection },
+                    get overflowAlignmentOffset() { return _renderedState.overflowAlignmentOffset },
                 };
-            },
-            get currentLayoutStage() {
-                return _currentLayoutStage;
             },
             update(): void {
                 _renderDisplayMode();
@@ -888,7 +884,11 @@ export class _CommandingSurface {
             },
             layoutDirty: () => {
                 _currentLayoutStage = Math.max(CommandLayoutPipeline.layoutStage, _currentLayoutStage);
-            }
+            },
+            get _currentLayoutStage() {
+                // Expose this for its usefulness in F12 debugging.
+                return _currentLayoutStage;
+            },
         }
 
     })();
