@@ -109,7 +109,7 @@ define([
                         }
                     }
                 },
-                
+
                 keyDown: function _LightDismissableLayer_keyDown(client /*: ILightDismissable */, eventObject) {
                     _LightDismissService.keyDown(this, eventObject);
                 },
@@ -609,13 +609,24 @@ define([
                 },
 
                 _hide: function Flyout_hide() {
+                    // jesse
+                    var index = Flyout._cascadeManager.indexOf(this);
+                    var subCascade = Flyout._cascadeManager._cascadingStack.slice(index);
+                    if (subCascade.some(function (flyout) {
+                        return flyout._animating;
+                    })) {
+                        // Queue us up to wait for the current animation to finish.
+                        // _checkDoNext() is always scheduled after the current animation completes.
+                        this._doNext = "hide";
+                    }
+                    else {
+                        // First close all subflyout descendants in the cascade.
+                        // Any calls to collapseFlyout through reentrancy should nop.
+                        Flyout._cascadeManager.collapseFlyout(this);
 
-                    // First close all subflyout descendants in the cascade.
-                    // Any calls to collapseFlyout through reentrancy should nop.
-                    Flyout._cascadeManager.collapseFlyout(this);
-
-                    if (this._baseHide()) {
-                        Flyout._cascadeManager.flyoutHiding(this);
+                        if (this._baseHide()) {
+                            Flyout._cascadeManager.flyoutHiding(this);
+                        }
                     }
                 },
 
@@ -999,7 +1010,7 @@ define([
                                 }
                             }
                             break;
-                        case "_cascade": 
+                        case "_cascade":
                             // Align vertically
                             // PREFERRED: When there is enough room to align a subMenu to either the top or the bottom of its
                             // anchor element, the subMenu prefers to be top aligned.

@@ -532,6 +532,43 @@ module CorsicaTests {
             flyout.hide();
             flyout.show();
         }
+
+        testCascadeDoesNotReleaseFlyoutsThatAreStillVisible2 = function (complete) {
+            // Verifies that synchronous calls to a flyout's show and hide methods do not pollute the cascadeManager's model of the cascade.
+
+
+            var requiredSize = 2;
+
+            var flyoutChain = this.generateFlyoutChain();
+
+            if (flyoutChain.length < requiredSize) {
+                LiveUnit.Assert.fail("TEST ERROR: test requires a minimum flyout chain size of " + requiredSize);
+            }
+
+            var msg = "The cascade should be empty when no flyouts are showing";
+            LiveUnit.LoggingCore.logComment("Test: " + msg);
+            LiveUnit.Assert.areEqual(cascadeManager.length, 0, msg);
+
+            // Begin by showing the entire chain except for the last flyout.
+            this.showFlyoutChain(flyoutChain, flyoutChain[flyoutChain.length - 2]).then(() => {
+
+                var headFlyout = flyoutChain[0];
+                var tailFlyout = flyoutChain[flyoutChain.length - 1];
+
+                var afterShow = () => {
+                    tailFlyout.removeEventListener("aftershow", afterShow, false);
+                    this.verifyCascade([tailFlyout]);
+                    complete();
+                };
+
+                tailFlyout.addEventListener("aftershow", afterShow, false);
+
+                // Regression test
+                tailFlyout.show();
+                headFlyout.hide(); // This will try to collapse the entire cascade.
+                tailFlyout.show();
+            });
+        }
     }
 
     // Test Class for Cascading Flyout unit tests.
