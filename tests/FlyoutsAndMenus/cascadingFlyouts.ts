@@ -51,7 +51,8 @@ module CorsicaTests {
             return []; // Appease the compiler.
         }
 
-        chainFlyouts(head: WinJS.UI.PrivateFlyout, tail: WinJS.UI.PrivateFlyout): void {
+        chainFlyouts(parentFlyout: WinJS.UI.PrivateFlyout, subFlyout: WinJS.UI.PrivateFlyout): void {
+
             this.abstractMethodFail();
         }
 
@@ -109,6 +110,7 @@ module CorsicaTests {
         }
 
         verifyCascade(expectedCascade: Array<WinJS.UI.PrivateFlyout>): void {
+
             // Verifies that the Flyouts currently in the cascade and the Flyouts that are currently visible line up with the chain of flyouts we are expecting.
             var msg = "The Flyouts in the cascade should match the chain of Flyouts we were expecting.";
             LiveUnit.LoggingCore.logComment("Test: " + msg);
@@ -507,6 +509,29 @@ module CorsicaTests {
                     complete();
                 });
         }
+
+        testCascadeDoesNotReleaseFlyoutsThatAreStillVisible = function (complete) {
+            // Verifies that synchronous calls to a flyout's show and hide methods do not pollute the cascadeManager's model of the cascade.
+
+            var flyout = this.generateFlyoutChain(1)[0];
+
+            var afterShow = () => {
+                flyout.removeEventListener("aftershow", afterShow, false);
+                this.verifyCascade([flyout]);
+                complete();
+            };
+
+            flyout.addEventListener("aftershow", afterShow, false);
+
+            var msg = "The cascade should be empty when no flyouts are showing";
+            LiveUnit.LoggingCore.logComment("Test: " + msg);
+            LiveUnit.Assert.areEqual(cascadeManager.length, 0, msg);
+
+            // Regression test
+            flyout.show();
+            flyout.hide();
+            flyout.show();
+        }
     }
 
     // Test Class for Cascading Flyout unit tests.
@@ -543,9 +568,9 @@ module CorsicaTests {
         }
 
         // Implementation of Abstract chainFlyouts Method.
-        chainFlyouts(head: WinJS.UI.PrivateFlyout, tail: WinJS.UI.PrivateFlyout): void {
-            // Chain the tail Flyout to the head Flyout.
-            tail.anchor = head.element;
+        chainFlyouts(parentFlyout: WinJS.UI.PrivateFlyout, subFlyout: WinJS.UI.PrivateFlyout): void {
+            // Chain the subFlyout to the parentFlyout.
+            subFlyout.anchor = parentFlyout.element;
         }
     }
 
@@ -627,10 +652,11 @@ module CorsicaTests {
         }
 
         // Implementation of Abstract chainFlyouts Method.
-        chainFlyouts(head: WinJS.UI.PrivateFlyout, tail: WinJS.UI.PrivateFlyout): void {
-            // Chain the tail Menu to the head Menu.
-            var menuCommand = head.element.querySelector("#" + this.secondCommandId).winControl;
-            menuCommand.flyout = tail;
+        chainFlyouts(parentMenu: WinJS.UI.PrivateFlyout, subMenu: WinJS.UI.PrivateFlyout): void {
+            // Chain the subMenu to the parentMenu. 
+            var commandInParentMenu = parentMenu.element.querySelector("#" + this.secondCommandId).winControl;
+            subMenu.anchor = commandInParentMenu;
+            commandInParentMenu.flyout = subMenu;
         }
 
         //
