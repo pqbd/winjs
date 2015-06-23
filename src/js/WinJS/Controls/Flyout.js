@@ -610,24 +610,25 @@ define([
 
                 _hide: function Flyout_hide() {
                     // jesse
-                    var index = Flyout._cascadeManager.indexOf(this);
-                    var subCascade = Flyout._cascadeManager._cascadingStack.slice(index);
-                    if (subCascade.some(function (flyout) {
-                        return flyout._animating;
-                    })) {
-                        // Queue us up to wait for the current animation to finish.
-                        // _checkDoNext() is always scheduled after the current animation completes.
-                        this._doNext = "hide";
-                    }
-                    else {
+                    //var index = Flyout._cascadeManager.indexOf(this);
+                    //var subCascade = Flyout._cascadeManager._cascadingStack.slice(index);
+                    //if (subCascade.some(function (flyout) {
+                    //    return flyout._animating;
+                    //})) {
+                    //    // Queue us up to wait for the current animation to finish.
+                    //    // _checkDoNext() is always scheduled after the current animation completes.
+                    //    this._doNext = "hide";
+                    //}
+                    //else {
+
+                    if (this._baseHide()) {
                         // First close all subflyout descendants in the cascade.
                         // Any calls to collapseFlyout through reentrancy should nop.
                         Flyout._cascadeManager.collapseFlyout(this);
 
-                        if (this._baseHide()) {
-                            Flyout._cascadeManager.flyoutHiding(this);
-                        }
+                        Flyout._cascadeManager.flyoutHiding(this);
                     }
+                    //}
                 },
 
                 _beforeEndHide: function Flyout_beforeEndHide() {

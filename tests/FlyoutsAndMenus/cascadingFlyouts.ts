@@ -557,7 +557,7 @@ module CorsicaTests {
 
                 var afterShow = () => {
                     tailFlyout.removeEventListener("aftershow", afterShow, false);
-                    this.verifyCascade([tailFlyout]);
+                    this.verifyCascade(flyoutChain);
                     complete();
                 };
 
