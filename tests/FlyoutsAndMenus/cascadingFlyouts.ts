@@ -193,6 +193,9 @@ module CorsicaTests {
                 LiveUnit.Assert.areEqual(cascadeManager.length, 1);
 
                 flyout.hide();
+                var msg = "Flyouts should be removed from the cascade synchronously when hide() is called.";
+                LiveUnit.LoggingCore.logComment("Test: " + msg);
+                LiveUnit.Assert.areEqual(0, cascadeManager.length, msg);
             };
             function checkAfterHide() {
                 flyout.removeEventListener("afterhide", checkAfterHide, false);
@@ -214,12 +217,15 @@ module CorsicaTests {
 
             var msg = "The cascade should be empty when no flyouts are showing";
             LiveUnit.LoggingCore.logComment("Test: " + msg);
-            LiveUnit.Assert.areEqual(cascadeManager.length, 0, msg);
+            LiveUnit.Assert.areEqual(0, cascadeManager.length, msg);
 
             flyout.addEventListener("aftershow", checkAfterShow, false);
             flyout.addEventListener("afterhide", checkAfterHide, false);
 
             flyout.show();
+            var msg = "Flyouts should be added to the cascade synchronously when show() is called.";
+            LiveUnit.LoggingCore.logComment("Test: " + msg);
+            LiveUnit.Assert.areEqual(1, cascadeManager.length, msg);
         }
 
         testChainedFlyoutsWillAppendToTheCascadeWhenShownInOrder = function (complete) {
@@ -527,7 +533,7 @@ module CorsicaTests {
 
             var msg = "The cascade should be empty when no flyouts are showing";
             LiveUnit.LoggingCore.logComment("Test: " + msg);
-            LiveUnit.Assert.areEqual(cascadeManager.length, 0, msg);
+            LiveUnit.Assert.areEqual(0, cascadeManager.length, msg);
 
             flyout.show();
             flyout.hide();
@@ -549,7 +555,7 @@ module CorsicaTests {
 
             var msg = "The cascade should be empty when no flyouts are showing";
             LiveUnit.LoggingCore.logComment("Test: " + msg);
-            LiveUnit.Assert.areEqual(cascadeManager.length, 0, msg);
+            LiveUnit.Assert.areEqual(0, cascadeManager.length, msg);
 
             // Begin by showing the entire chain except for the last flyout.
             this.showFlyoutChain(flyoutChain, flyoutChain[flyoutChain.length - 2]).then(() => {
