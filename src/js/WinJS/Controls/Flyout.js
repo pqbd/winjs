@@ -672,7 +672,7 @@ define([
                     Flyout._cascadeManager.appendFlyout(this);
 
                     // If we're animating (eg baseShow is going to fail), or the cascadeManager is in the 
-                    // middle of a updating the cascade, then we have to try again later.
+                    // middle of updating the cascade, then we have to try again later.
                     if (this._element.winAnimating) {
                         this._reuseCurrent = true;
                         // Queue us up to wait for the current animation to finish.
