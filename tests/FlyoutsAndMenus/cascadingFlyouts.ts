@@ -565,7 +565,8 @@ module CorsicaTests {
 
                 var afterShow = () => {
                     tailFlyout.removeEventListener("aftershow", afterShow, false);
-                    this.verifyCascade([tailFlyout]);
+                    // Verify tailFlyout is the lone flyout in the cascade.
+                    this.verifyCascade([tailFlyout]); 
                     complete();
                 };
 
@@ -587,6 +588,7 @@ module CorsicaTests {
                 // which will be resolved asynchronously after the tail flyout's current animation completes. In the
                 // case that the tail flyout is already shown, the resolution of _checkDoNext will nop.
                 tailFlyout.show(); 
+
             });
         }
     }
