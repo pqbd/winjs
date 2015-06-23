@@ -52,7 +52,6 @@ module CorsicaTests {
         }
 
         chainFlyouts(parentFlyout: WinJS.UI.PrivateFlyout, subFlyout: WinJS.UI.PrivateFlyout): void {
-
             this.abstractMethodFail();
         }
 
