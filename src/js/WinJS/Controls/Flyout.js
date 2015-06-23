@@ -667,12 +667,12 @@ define([
                         this._currentAlignment = alignment;
                     }
 
-                    // First include the flyout in the cascadingStack and collapse any flyouts in the current 
-                    // stack that are not anchored ancestors.
+                    // Add this flyout to the correct position cascadingStack, first collapsing flyouts in the 
+                    // current stack that are not anchored ancestors to this flyout.
                     Flyout._cascadeManager.appendFlyout(this);
 
-                    // If we're animating (eg baseShow is going to fail), or the cascadeManager is in the middle of a updating the cascade,
-                    // then don't mess up our current state.
+                    // If we're animating (eg baseShow is going to fail), or the cascadeManager is in the 
+                    // middle of a updating the cascade, then we have to try again later.
                     if (this._element.winAnimating) {
                         this._reuseCurrent = true;
                         // Queue us up to wait for the current animation to finish.
