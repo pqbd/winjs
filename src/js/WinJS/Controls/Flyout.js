@@ -262,7 +262,7 @@ define([
 
                     flyoutToAdd.element.addEventListener("keydown", this._handleKeyDownInCascade_bound, false);
                     this._cascadingStack.push(flyoutToAdd);
-                    this._dismissableLayer.shown(flyoutToAdd._dismissable);
+                    //this._dismissableLayer.shown(flyoutToAdd._dismissable);
                 },
                 collapseFlyout: function _CascadeManager_collapseFlyout(flyout) {
                     // Removes flyout param and its subflyout descendants from the _cascadingStack.
@@ -288,6 +288,9 @@ define([
                         this.unlocked = null;
                         signal.complete();
                     }
+                },
+                flyoutShown: function _CascadeManager_flyoutShown(flyout) {
+                    this._dismissableLayer.shown(flyout._dismissable);
                 },
                 flyoutHiding: function _CascadeManager_flyoutHiding(flyout) {
                     this._dismissableLayer.hiding(flyout._dismissable);
@@ -609,25 +612,26 @@ define([
                 },
 
                 _hide: function Flyout_hide() {
-                    // jesse
-                    var index = Flyout._cascadeManager.indexOf(this);
-                    var subCascade = Flyout._cascadeManager._cascadingStack.slice(index);
-                    if (subCascade.some(function (flyout) {
-                        return flyout._animating;
-                    })) {
-                        // Queue us up to wait for the current animation to finish.
-                        // _checkDoNext() is always scheduled after the current animation completes.
-                        this._doNext = "hide";
-                    }
-                    else {
-                        // First close all subflyout descendants in the cascade.
-                        // Any calls to collapseFlyout through reentrancy should nop.
-                        Flyout._cascadeManager.collapseFlyout(this);
+                    //// jesse
+                    //var index = Flyout._cascadeManager.indexOf(this);
+                    //var subCascade = Flyout._cascadeManager._cascadingStack.slice(index);
+                    //if (subCascade.some(function (flyout) {
+                    //    return flyout._animating;
+                    //})) {
+                    //    // Queue us up to wait for the current animation to finish.
+                    //    // _checkDoNext() is always scheduled after the current animation completes.
+                    //    this._doNext = "hide";
+                    //}
+                    //else {
 
-                        if (this._baseHide()) {
-                            Flyout._cascadeManager.flyoutHiding(this);
-                        }
+                    // First close all subflyout descendants in the cascade.
+                    // Any calls to collapseFlyout through reentrancy should nop.
+                    Flyout._cascadeManager.collapseFlyout(this);
+
+                    if (this._baseHide()) {
+                        Flyout._cascadeManager.flyoutHiding(this);
                     }
+                    //}
                 },
 
                 _beforeEndHide: function Flyout_beforeEndHide() {
@@ -639,6 +643,8 @@ define([
                         // Don't do anything.
                         return;
                     }
+
+
 
                     // Pick up defaults
                     if (!anchor) {
@@ -673,6 +679,8 @@ define([
                         this._currentPlacement = placement;
                         this._currentAlignment = alignment;
                     }
+
+                    Flyout._cascadeManager.appendFlyout(this);
 
                     // If we're animating (eg baseShow is going to fail), or the cascadeManager is in the middle of a updating the cascade,
                     // then don't mess up our current state.
@@ -719,7 +727,7 @@ define([
                                 finalDiv.tabIndex = _ElementUtilities._getHighestTabIndexInList(_elms);
                             }
 
-                            Flyout._cascadeManager.appendFlyout(this);
+                            Flyout._cascadeManager.flyoutShown(this);
                         }
                     }
                 },
