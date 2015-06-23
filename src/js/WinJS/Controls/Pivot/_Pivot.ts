@@ -28,7 +28,8 @@ import _WriteProfilerMark = require("../../Core/_WriteProfilerMark");
 import _Constants = require("./_Constants");
 import _PivotItem = require("./_Item");
 
-// Force-load PivotItem
+// Force-load Dependencies
+_Hoverable.isHoverable;
 _PivotItem.PivotItem;
 
 require(["require-style!less/styles-pivot"]);
@@ -85,7 +86,7 @@ export class Pivot {
     _elementPointerDownPoint: { x: number; y: number; type: string; inHeaders: boolean; time: number; };
     _firstLoad = true;
     _headerItemsElWidth: number;
-    private _headersState: HeaderStateBase;
+    private _headersState: HeaderStateBase; // Must be private since HeaderStateBase type is not exported
     _hidePivotItemAnimation = Promise.wrap<any>();
     _id: string;
     _items: BindingList.List<_PivotItem.PivotItem>;
@@ -533,7 +534,8 @@ export class Pivot {
             this._headersState.handleNavigation(goPrev, index, this._selectedIndex);
             this._selectedIndex = index;
 
-            // Note: Adding Promise.timeout to force asynchrony.
+            // Note: Adding Promise.timeout to force asynchrony so that thisLoadPromise
+            // is set before handler executes and compares thisLoadPromise.
             return Promise.join([newItem._process(), this._hidePivotItemAnimation, Promise.timeout()]).then(() => {
                 if (this._disposed || this._loadPromise !== thisLoadPromise) {
                     return;
@@ -867,7 +869,8 @@ export class Pivot {
     _hidePivotItem(element: HTMLElement, goPrevious: boolean, skipAnimation: boolean) {
         if (skipAnimation || !_TransitionAnimation.isAnimationEnabled()) {
             element.style.display = "none";
-            return this._hidePivotItemAnimation = Promise.wrap();
+            this._hidePivotItemAnimation = Promise.wrap();
+            return this._hidePivotItemAnimation;
         }
 
         this._hidePivotItemAnimation = _TransitionAnimation.executeTransition(element, {
@@ -904,11 +907,6 @@ export class Pivot {
         if (this._pointerType === (e.pointerType || PT_MOUSE)) {
             return;
         }
-        if (this._headersContainerElement.contains(<HTMLElement>e.relatedTarget)) {
-            // Don't hide the nav button if the pointerout event is being fired from going
-            // from one element to another within the header track.
-            return;
-        }
 
         this._pointerType = e.pointerType || PT_MOUSE;
         if (this._pointerType === PT_TOUCH) {
@@ -935,13 +933,11 @@ export class Pivot {
         element.style.display = "";
         if (skipAnimation || !_TransitionAnimation.isAnimationEnabled()) {
             element.style.opacity = "";
-            return this._showPivotItemAnimation = Promise.wrap();
+            this._showPivotItemAnimation = Promise.wrap();
+            return this._showPivotItemAnimation;
         }
 
-        var negativeTransform = goPrevious;
-        if (this._rtl) {
-            negativeTransform = !negativeTransform;
-        }
+        var negativeTransform = this._rtl ? !goPrevious : goPrevious;
 
         // Find the elements to slide in
         function filterOnScreen(element: Element) {
