@@ -534,8 +534,8 @@ module CorsicaTests {
         }
 
         testCascadeDoesNotReleaseFlyoutsThatAreStillVisible2 = function (complete) {
+            // Regression test
             // Verifies that synchronous calls to a flyout's show and hide methods do not pollute the cascadeManager's model of the cascade.
-
 
             var requiredSize = 2;
 
@@ -557,16 +557,29 @@ module CorsicaTests {
 
                 var afterShow = () => {
                     tailFlyout.removeEventListener("aftershow", afterShow, false);
-                    this.verifyCascade(flyoutChain);
+                    this.verifyCascade([tailFlyout]);
                     complete();
                 };
 
                 tailFlyout.addEventListener("aftershow", afterShow, false);
 
-                // Regression test
-                tailFlyout.show();
-                headFlyout.hide(); // This will try to collapse the entire cascade.
-                tailFlyout.show();
+
+                // (1) This will synchronously add the tailFlyout to the end of the cascadingStack and start its 
+                // asynchronous show animation.
+                tailFlyout.show(); 
+                
+                // (2) This will synchronously remove the headFlyout and all its subFlyouts from the cascadingStack
+                // and call hide() on each of them them. All of the flyouts except for the tail flyout were already 
+                // visible, so they will begin an asynchronous hide animation. The tail flyout is still doing a show 
+                // animation, so it will set its _doNext operation to "hide", which will be resolved asynchronously 
+                // after the tail flyout's current animation completes. 
+                headFlyout.hide(); 
+                
+                // (3) This will synchronously add the tail flyout into the cascade. Tail flyout is still doing the
+                // original show animation from (1), so this will override the _doNext operation from "hide" to "show", 
+                // which will be resolved asynchronously after the tail flyout's current animation completes. In the
+                // case that the tail flyout is already shown, the resolution of _checkDoNext will nop.
+                tailFlyout.show(); 
             });
         }
     }

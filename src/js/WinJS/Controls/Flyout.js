@@ -624,7 +624,6 @@ define([
                     //}
                     //else {
 
-                    if (this._baseHide()) {
                     // First close all subflyout descendants in the cascade.
                     // Any calls to collapseFlyout through reentrancy should nop.
                     Flyout._cascadeManager.collapseFlyout(this);
