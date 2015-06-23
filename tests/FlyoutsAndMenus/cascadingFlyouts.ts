@@ -510,8 +510,10 @@ module CorsicaTests {
                 });
         }
 
-        testCascadeDoesNotReleaseFlyoutsThatAreStillVisible = function (complete) {
-            // Verifies that synchronous calls to a flyout's show and hide methods do not pollute the cascadeManager's model of the cascade.
+        testCascadeDoesNotLoseTrackOfShowingFlyouts1 = function (complete) {
+            // Regression test for https://github.com/winjs/winjs/issues/1256
+            // Verifies that synchronously showing, hiding, and showing a flyout
+            // will not invalidate the cascadeManager's model of the cascade.
 
             var flyout = this.generateFlyoutChain(1)[0];
 
@@ -527,15 +529,15 @@ module CorsicaTests {
             LiveUnit.LoggingCore.logComment("Test: " + msg);
             LiveUnit.Assert.areEqual(cascadeManager.length, 0, msg);
 
-            // Regression test
             flyout.show();
             flyout.hide();
             flyout.show();
         }
 
-        testCascadeDoesNotReleaseFlyoutsThatAreStillVisible2 = function (complete) {
-            // Regression test
-            // Verifies that synchronous calls to a flyout's show and hide methods do not pollute the cascadeManager's model of the cascade.
+        testCascadeDoesNotLoseTrackOfShowingFlyouts2 = function (complete) {
+            // Regression test for https://github.com/winjs/winjs/issues/1256
+            // Verifies that synchronously showing and hiding various flyouts in the 
+            // cascade will not invalidate the cascadeManager's model of the cascade.
 
             var requiredSize = 2;
 
@@ -563,14 +565,13 @@ module CorsicaTests {
 
                 tailFlyout.addEventListener("aftershow", afterShow, false);
 
-
                 // (1) This will synchronously add the tailFlyout to the end of the cascadingStack and start its 
                 // asynchronous show animation.
                 tailFlyout.show(); 
                 
                 // (2) This will synchronously remove the headFlyout and all its subFlyouts from the cascadingStack
-                // and call hide() on each of them them. All of the flyouts except for the tail flyout were already 
-                // visible, so they will begin an asynchronous hide animation. The tail flyout is still doing a show 
+                // and call hide() on each of them them. All of the flyouts except for the tail flyout were already
+                // visible, so they will begin an asynchronous hide animation. The tail flyout is still doing a show
                 // animation, so it will set its _doNext operation to "hide", which will be resolved asynchronously 
                 // after the tail flyout's current animation completes. 
                 headFlyout.hide(); 
