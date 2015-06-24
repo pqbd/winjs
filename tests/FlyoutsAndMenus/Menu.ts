@@ -805,11 +805,36 @@ module CorsicaTests {
 
         testShowAt(complete) {
 
+            // Verifies that calling Menu.showAt(point) with an "in bounds point" will align the menu borderbox with the point specified.
+            // An "in bounds point" is defined as a point where the borderbox of the menu can be positioned such that no edge of the menu's 
+            // marginbox overruns any edge of the visual viewport. 
+
             var menuElement = document.createElement('div');
             document.body.appendChild(menuElement);
             var menu = new Menu(menuElement, { commands: { type: 'separator', id: 'sep' } });
-            var testX = 5;
-            var testY = 5;
+
+            var requiredWindowDimension = 100;
+            // For this test to be valid, the Menu's MarginBox must fit within the confines of the visual.
+            // viewport after we've aligned the top / left of the Menu's paddingbox to the specified point.
+            // Otherwise its considered an out of bounds point and is handled in a later test case.
+            LiveUnit.Assert.isTrue(window.innerWidth >= requiredWindowDimension, "TEST ERROR: test expects visual viewport width >= 100px");
+            LiveUnit.Assert.isTrue(window.innerHeight >= requiredWindowDimension, "TEST ERROR: test expects visual viewport width >= 100px");
+
+
+            // Find a valid "in bounds point" within the window to pass to Menu.showAt()
+            var style = menu.element.style;
+            var borderBoxSize = 50;
+            var margins = 5;
+
+            style.boxSizing = "border-box";
+            style.width = borderBoxSize + "px";
+            style.maxWidth = borderBoxSize + "px";
+            style.height = borderBoxSize + "px";
+            style.maxHeight = borderBoxSize + "px";
+            style.margin = margins + "px";
+
+            var testX = margins + 5;
+            var testY = margins + 5;
 
             function testShowAt_WithCoordinates(): WinJS.Promise<any> {
                 var coordinates = { x: testX, y: testY };
@@ -817,7 +842,7 @@ module CorsicaTests {
             }
 
             function testShowAt_WithMouseEvent(): WinJS.Promise<any> {
-                // API requires clientX abd clientY properties. 
+                // API requires clientX and clientY properties. 
                 var pointerEventObjectShim = { clientX: testX, clientY: testY };
                 return verifyPositionOnScreen(pointerEventObjectShim, "MouseEventObj");
             }

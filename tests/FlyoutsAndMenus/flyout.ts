@@ -555,10 +555,34 @@ module CorsicaTests {
         }
 
         testShowAt(complete) {
+            // Verifies that calling Flyout.showAt(point) with an "in bounds point" will align the flyout borderbox with the point specified.
+            // An "in bounds point" is defined as a point where the borderbox of the flyout can be positioned such that no edge of the flyout's 
+            // marginbox overruns any edge of the visual viewport. 
 
             var flyout = new Flyout(_element, { anchor: document.body });
-            var testX = 5;
-            var testY = 5;
+
+            var requiredWindowDimension = 100;
+            // For this test to be valid, the Flyout's MarginBox must fit within the confines of the visual.
+            // viewport after we've aligned the top / left of the Flyout's paddingbox to the specified point.
+            // Otherwise its considered an out of bounds point and is handled in a later test case.
+            LiveUnit.Assert.isTrue(window.innerWidth >= requiredWindowDimension, "TEST ERROR: test expects visual viewport width >= 100px");
+            LiveUnit.Assert.isTrue(window.innerHeight >= requiredWindowDimension, "TEST ERROR: test expects visual viewport width >= 100px");
+
+            
+            // Find a valid "in bounds point" within the window to pass to Flyout.showAt()
+            var style = flyout.element.style;
+            var borderBoxSize = 50;
+            var margins = 5;
+
+            style.boxSizing = "border-box";
+            style.width = borderBoxSize + "px";
+            style.maxWidth = borderBoxSize + "px";
+            style.height = borderBoxSize + "px";
+            style.maxHeight = borderBoxSize + "px";
+            style.margin = margins + "px";
+
+            var testX = margins + 5;
+            var testY = margins + 5;
 
             function testShowAt_WithCoordinates(): WinJS.Promise<any> {
                 var coordinates = { x: testX, y: testY };
@@ -566,7 +590,7 @@ module CorsicaTests {
             }
 
             function testShowAt_WithMouseEvent(): WinJS.Promise<any> {
-                // API requires clientX abd clientY properties. 
+                // API requires clientX and clientY properties. 
                 var mouseEventObjectShim = { clientX: testX, clientY: testY };
                 return verifyPositionOnScreen(mouseEventObjectShim, "MouseEventObj");
             }
@@ -580,9 +604,9 @@ module CorsicaTests {
                         var flyoutRect = flyout.element.getBoundingClientRect();
 
                         LiveUnit.Assert.areEqual(testY, flyoutRect.top,
-                            testParameterType + ": Flyout should be top aligned with the y coordinate");
+                            testParameterType + ": Flyout borderbox should be top aligned with the y coordinate");
                         LiveUnit.Assert.areEqual(testX, flyoutRect.left,
-                            testParameterType + ": Flyout should be left aligned with the x coordinate");
+                            testParameterType + ": Flyout borderbox should be left aligned with the x coordinate");
 
                         flyout.onafterhide = function () {
                             flyout.onafterhide = null;
@@ -601,12 +625,11 @@ module CorsicaTests {
         }
 
         testShowAt_Boundaries(complete) {
-             // Verify that when showAt is called:
-             // if any edge of the flyout would clip through the corresponding edge of the visual viewport, 
-             // then: the flyout is repositioned such that the clipping edge is instead pinned to the 
-             // corresponding viewport edge.
+            // Verify that when showAt is called:
+            // if any edge of the flyout's marginbox would clip through the corresponding edge of the visual viewport, 
+            // then: the flyout's margin box is repositioned such that the clipping edge is instead pinned to the 
+            // corresponding viewport edge.
 
-            
             function getLocation(flyout: WinJS.UI.PrivateFlyout): IMarginBox {
                 // Returns locaton of the Flyout's margin box.
                 var margins = WinJS.Utilities._getPreciseMargins(flyout.element);
