@@ -51,7 +51,7 @@ var strings = {
     get pivotViewportAriaLabel() { return _Resources._getWinJSString("ui/pivotViewportAriaLabel").value; }
 };
 
-var supportsSnap = !!(_ElementUtilities._supportsSnapPoints && _Global["HTMLElement"].prototype.msZoomTo && "inertiaDestinationX" in _Global["MSManipulationEvent"].prototype);
+var supportsSnap = !!(_ElementUtilities._supportsSnapPoints && "inertiaDestinationX" in _Global["MSManipulationEvent"].prototype);
 var PT_MOUSE = _ElementUtilities._MSPointerEvent.MSPOINTER_TYPE_MOUSE || "mouse";
 var PT_TOUCH = _ElementUtilities._MSPointerEvent.MSPOINTER_TYPE_TOUCH || "touch";
 var Keys = _ElementUtilities.Key;
@@ -396,13 +396,11 @@ export class Pivot {
         this._rtl = _Global.getComputedStyle(this._element, null).direction === "rtl";
         this._headersState.refreshHeadersState(true);
         this._pendingRefresh = false;
-        this._firstLoad = true;
-        if (this.items.length) {
-            this._headersState.handleNavigation(false, this._selectedIndex, this._selectedIndex);
-        }
 
+        this._firstLoad = true;
         this.selectedIndex = this._selectedIndex;
         this._firstLoad = false;
+
         this._recenterViewport();
 
         function attachItems(pivot: Pivot) {
@@ -448,10 +446,7 @@ export class Pivot {
 
         // This is to coalesce property setting operations such as items and scrollPosition.
         this._pendingRefresh = true;
-
-        this._loadPromise.then(() => {
-            Scheduler.schedule(this._applyProperties.bind(this), Scheduler.Priority.high);
-        });
+        Scheduler.schedule(this._applyProperties.bind(this), Scheduler.Priority.high);
     }
 
     _resizeHandler() {
@@ -973,7 +968,7 @@ export class Pivot {
                 from: "translateX(" + (negativeTransform ? "-20px" : "20px") + ")",
                 to: "",
             }),
-            Animations[negativeTransform ? "slideRightIn" : "slideLeftIn"](null, slideGroup1Els, slideGroup2Els, slideGroup3Els) 
+            Animations[negativeTransform ? "slideRightIn" : "slideLeftIn"](null, slideGroup1Els, slideGroup2Els, slideGroup3Els)
         ]);
         return this._showPivotItemAnimation;
     }
@@ -1197,7 +1192,6 @@ class HeaderStateStatic extends HeaderStateBase {
     }
 
     activateHeader(headerElement: HTMLElement) {
-        var currentActiveHeader = <HTMLElement>this.pivot._headersContainerElement.children[this.pivot.selectedIndex];
         this.setActiveHeader(headerElement);
         this.pivot._animateToPrevious = headerElement["_pivotItemIndex"] < this.pivot.selectedIndex;
         this.pivot.selectedIndex = headerElement["_pivotItemIndex"];
@@ -1231,7 +1225,6 @@ class HeaderStateOverflow extends HeaderStateBase {
     constructor(pivot: Pivot) {
         super(pivot);
 
-        this._blocked = false;
         pivot._slideHeadersAnimation = Promise.wrap();
 
         if (pivot._headersContainerElement.children.length && _TransitionAnimation.isAnimationEnabled()) {
