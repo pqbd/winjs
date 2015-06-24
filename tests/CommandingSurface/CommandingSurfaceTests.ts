@@ -275,6 +275,24 @@ module CorsicaTests {
         //    LiveUnit.Assert.areEqual("myList", commandingSurface.element.getAttribute("aria-label"), "CommandingSurface should have not set a default aria label");
         //}
 
+        testOverFlowButtonVisibilityWhenOverflowAreaIsEmpty() {
+
+            Object.keys(_CommandingSurface.ClosedDisplayMode).forEach((mode) => {
+                this._element.style.width = "1000px";
+                var data = new WinJS.Binding.List([
+                    new Command(null, { type: _Constants.typeButton, label: "opt 1" }),
+                    new Command(null, { type: _Constants.typeButton, label: "opt 2" })
+                ]);
+                var commandingSurface = new _CommandingSurface(this._element, {
+                    data: data
+                });
+
+                LiveUnit.Assert.areEqual(data.length, commandingSurface._primaryCommands.length, "Primary commands array has an invalid length");
+                LiveUnit.Assert.areEqual(0, commandingSurface._secondaryCommands.length, "Secondary commands array has an invalid length");
+                LiveUnit.Assert.areEqual("none", getComputedStyle(commandingSurface._dom.overflowButton).display, "Overflow button should be hidden when the primary commands fit");
+            });
+        }
+
         testOverflowButtonHiddenWithoutSecondaryCommands() {
             this._element.style.width = "1000px";
             var data = new WinJS.Binding.List([

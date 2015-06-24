@@ -13,6 +13,8 @@ export var ClassNames = {
     overflowAreaContainerCssClass: "win-commandingsurface-overflowareacontainer",
     contentFlyoutCssClass: "win-commandingsurface-contentflyout",
     emptyCommandingSurfaceCssClass: "win-commandingsurface-empty",
+    emptyActionAreaCssClass: "win-commandingsurface-actionarea-empty",
+    emptyOverflowAreaCssClass: "win-commandingsurface-overflowarea-empty",
     menuCssClass: "win-menu",
     menuContainsToggleCommandClass: "win-menu-containstogglecommand",
     insetOutlineClass: "win-commandingsurface-insetoutline",

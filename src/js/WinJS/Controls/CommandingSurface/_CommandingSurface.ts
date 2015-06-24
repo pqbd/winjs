@@ -985,11 +985,6 @@ export class _CommandingSurface {
 
         // Ensure that the overflow button is always the last element in the actionarea
         this._dom.actionArea.appendChild(this._dom.overflowButton);
-        if (this.data.length > 0) {
-            _ElementUtilities.removeClass(this._dom.root, _Constants.ClassNames.emptyCommandingSurfaceCssClass);
-        } else {
-            _ElementUtilities.addClass(this._dom.root, _Constants.ClassNames.emptyCommandingSurfaceCssClass);
-        }
 
         // Execute the animation.
         updateCommandAnimation.execute();
@@ -1001,18 +996,19 @@ export class _CommandingSurface {
     private _measure(): boolean {
         this._writeProfilerMark("_measure,info");
         if (this._canMeasure()) {
-            var overflowButtonWidth = _ElementUtilities._getPreciseTotalWidth(this._dom.overflowButton),
-                actionAreaContentBoxWidth = _ElementUtilities._getPreciseContentWidth(this._dom.actionArea),
-                separatorWidth = 0,
-                standardCommandWidth = 0,
-                contentCommandWidths: { [uniqueID: string]: number; } = {};
+            this._dom.overflowButton.style.display = "";
+            var overflowButtonWidth = _ElementUtilities._getPreciseTotalWidth(this._dom.overflowButton);
+            var actionAreaContentBoxWidth = _ElementUtilities._getPreciseContentWidth(this._dom.actionArea);
+            var separatorWidth = 0;
+            var standardCommandWidth = 0;
+            var contentCommandWidths: { [uniqueID: string]: number; } = {};
 
             this._primaryCommands.forEach((command) => {
                 // Ensure that the element we are measuring does not have display: none (e.g. it was just added, and it
                 // will be animated in)
                 var originalDisplayStyle = command.element.style.display;
                 command.element.style.display = "";
-
+                 
                 if (command.type === _Constants.typeContent) {
                     // Measure each 'content' command type that we find
                     contentCommandWidths[this._commandUniqueId(command)] = _ElementUtilities._getPreciseTotalWidth(command.element);
@@ -1057,10 +1053,9 @@ export class _CommandingSurface {
 
         this._primaryCommands.forEach((command) => {
             command.element.style.display = (command.hidden ? "none" : "");
-        })
+        });
 
         var primaryCommandsLocation = this._getVisiblePrimaryCommandsLocation();
-
         this._hideSeparatorsIfNeeded(primaryCommandsLocation.actionArea);
 
         // Primary commands that will be mirrored in the overflow area should be hidden so
@@ -1076,9 +1071,6 @@ export class _CommandingSurface {
         });
 
         var overflowCommands = primaryCommandsLocation.overflowArea;
-
-        var showOverflowButton = (overflowCommands.length > 0 || this._secondaryCommands.length > 0);
-        this._dom.overflowButton.style.display = showOverflowButton ? "" : "none";
 
         // Set up a custom content flyout if there will be "content" typed commands in the overflowarea.
         var isCustomContent = (command: _Command.ICommand) => { return command.type === _Constants.typeContent };
@@ -1148,6 +1140,19 @@ export class _CommandingSurface {
 
         _ElementUtilities[hasToggleCommands ? "addClass" : "removeClass"](this._dom.overflowArea, _Constants.ClassNames.menuContainsToggleCommandClass);
 
+        var isCommandVisibleInOverflowArea = (command: _MenuCommand.MenuCommand) => { 
+            var style = command.element.style;
+            return (style.visibility !== "hidden" && style.display !== "none");
+        };
+        var overflowButton = this._dom.overflowButton;
+        var overflowAreaEmpty = !(this._menuCommandProjections.some(isCommandVisibleInOverflowArea));
+        if (this._updateDomImpl.renderedState.closedDisplayMode === ClosedDisplayMode.full &&
+            overflowAreaEmpty) {
+            this._dom.overflowButton.style.display = "none";
+        } else {
+            this._dom.overflowButton.style.display = "";
+        }
+
         this._writeProfilerMark("_layoutCommands,StopTM");
 
         // Indicate layout was successful.
@@ -1190,7 +1195,7 @@ export class _CommandingSurface {
 
         var actionAreaCommands: _Command.ICommand[] = [];
         var overflowAreaCommands: _Command.ICommand[] = [];
-        var overflowButtonSpace = 0;
+        var reservedSpace = 0;
         var hasSecondaryCommands = this._secondaryCommands.length > 0;
 
         var commandsInfo = this._getVisiblePrimaryCommandsInfo();
@@ -1204,10 +1209,11 @@ export class _CommandingSurface {
         for (var i = 0, len = sortedCommandsInfo.length; i < len; i++) {
             availableWidth -= sortedCommandsInfo[i].width;
 
+            // Reserve space for the overflow button unless we are evaluating the last command and there are no secondary commands.
             // The overflow button needs space if there are secondary commands, or we are not evaluating the last command.
-            overflowButtonSpace = (hasSecondaryCommands || (i < len - 1) ? this._cachedMeasurements.overflowButtonWidth : 0);
+            reservedSpace = (hasSecondaryCommands || (i < len - 1) ? this._cachedMeasurements.overflowButtonWidth : 0);
 
-            if (availableWidth - overflowButtonSpace < 0) {
+            if (availableWidth < reservedSpace) {
                 maxPriority = sortedCommandsInfo[i].priority - 1;
                 break;
             }
