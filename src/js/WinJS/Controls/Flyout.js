@@ -241,27 +241,27 @@ define([
             },
             {
                 appendFlyout: function _CascadeManager_appendFlyout(flyoutToAdd) {
-                    // PRECONDITION: flyoutToAdd must not already be in the cascade.
-                    _Log.log && this.indexOf(flyoutToAdd) >= 0 && _Log.log('_CascadeManager is attempting to append a Flyout that is already in the cascade.', "winjs _CascadeManager", "error");
                     // PRECONDITION: this.reentrancyLock must be false. appendFlyout should only be called from baseFlyoutShow() which is the function responsible for preventing reentrancy.
                     _Log.log && this.reentrancyLock && _Log.log('_CascadeManager is attempting to append a Flyout through reentrancy.', "winjs _CascadeManager", "error");
 
-                    // IF the anchor element for flyoutToAdd is contained within another flyout,
-                    // && that flyout is currently in the cascadingStack, consider that flyout to be the parent of flyoutToAdd:
-                    //  Remove from the cascadingStack, any subflyout descendants of the parent flyout.
-                    // ELSE flyoutToAdd isn't anchored to any of the Flyouts in the existing cascade
-                    //  Collapse the entire cascadingStack to start a new cascade.
-                    // FINALLY:
-                    //  add flyoutToAdd to the end of the cascading stack. Monitor it for events.
-                    var indexOfParentFlyout = this.indexOfElement(flyoutToAdd._currentAnchor);
-                    if (indexOfParentFlyout >= 0) {
-                        this.collapseFlyout(this.getAt(indexOfParentFlyout + 1));
-                    } else {
-                        this.collapseAll();
-                    }
+                    if (this.indexOf(flyoutToAdd) < 0) {
+                        // IF the anchor element for flyoutToAdd is contained within another flyout,
+                        // && that flyout is currently in the cascadingStack, consider that flyout to be the parent of flyoutToAdd:
+                        //  Remove from the cascadingStack, any subflyout descendants of the parent flyout.
+                        // ELSE flyoutToAdd isn't anchored to any of the Flyouts in the existing cascade
+                        //  Collapse the entire cascadingStack to start a new cascade.
+                        // FINALLY:
+                        //  add flyoutToAdd to the end of the cascading stack. Monitor it for events.
+                        var indexOfParentFlyout = this.indexOfElement(flyoutToAdd._currentAnchor);
+                        if (indexOfParentFlyout >= 0) {
+                            this.collapseFlyout(this.getAt(indexOfParentFlyout + 1));
+                        } else {
+                            this.collapseAll();
+                        }
 
-                    flyoutToAdd.element.addEventListener("keydown", this._handleKeyDownInCascade_bound, false);
-                    this._cascadingStack.push(flyoutToAdd);
+                        flyoutToAdd.element.addEventListener("keydown", this._handleKeyDownInCascade_bound, false);
+                        this._cascadingStack.push(flyoutToAdd);
+                    }
                 },
                 collapseFlyout: function _CascadeManager_collapseFlyout(flyout) {
                     // Synchronously removes flyout param and its subflyout descendants from the _cascadingStack.
