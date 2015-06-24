@@ -565,23 +565,19 @@ module CorsicaTests {
                 return verifyPositionOnScreen(coordinates, "Coordinates");
             }
 
-            function testShowAt_WithPointerEvent(): WinJS.Promise<any> {
-                // Not every browser supports PointerEvents, but all that the Flyout.showAt(PointerEbentObj) 
-                // API requires are clientX abd clientY properties. 
-                var pointerEventObjectShim = { clientX: testX, clientY: testY };
-                return verifyPositionOnScreen(pointerEventObjectShim, "PointerEventObj");
+            function testShowAt_WithMouseEvent(): WinJS.Promise<any> {
+                // API requires clientX abd clientY properties. 
+                var mouseEventObjectShim = { clientX: testX, clientY: testY };
+                return verifyPositionOnScreen(mouseEventObjectShim, "MouseEventObj");
             }
 
             function verifyPositionOnScreen(testParameter, testParameterType): WinJS.Promise<any> {
-                // Verify that the flyout is is positioned with the top left corner of its border box located at
+                // Verify that the flyout is positioned with the top left corner of its border box located at
                 // the location specified by the testParameter.
                 return new WinJS.Promise(function (completePromise) {
                     flyout.onaftershow = () => {
                         flyout.onaftershow = null;
-                        var flyoutStyle = getComputedStyle(flyout.element);
                         var flyoutRect = flyout.element.getBoundingClientRect();
-                        var marginTop = WinJS.Utilities.convertToPixels(flyout.element, flyoutStyle.marginTop);
-                        var marginLeft = WinJS.Utilities.convertToPixels(flyout.element, flyoutStyle.marginLeft);
 
                         LiveUnit.Assert.areEqual(testY, flyoutRect.top,
                             testParameterType + ": Flyout should be top aligned with the y coordinate");
@@ -600,7 +596,7 @@ module CorsicaTests {
             }
 
             testShowAt_WithCoordinates()
-                .then(testShowAt_WithPointerEvent)
+                .then(testShowAt_WithMouseEvent)
                 .then(complete);
         }
 

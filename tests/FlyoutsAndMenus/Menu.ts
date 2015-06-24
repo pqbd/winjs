@@ -816,23 +816,19 @@ module CorsicaTests {
                 return verifyPositionOnScreen(coordinates, "Coordinates");
             }
 
-            function testShowAt_WithPointerEvent(): WinJS.Promise<any> {
-                // Not every browser supports PointerEvents, but all that the Flyout.showAt(PointerEbentObj) 
-                // API requires are clientX abd clientY properties. 
+            function testShowAt_WithMouseEvent(): WinJS.Promise<any> {
+                // API requires clientX abd clientY properties. 
                 var pointerEventObjectShim = { clientX: testX, clientY: testY };
-                return verifyPositionOnScreen(pointerEventObjectShim, "PointerEventObj");
+                return verifyPositionOnScreen(pointerEventObjectShim, "MouseEventObj");
             }
 
             function verifyPositionOnScreen(testParameter, testParameterType): WinJS.Promise<any> {
-                // Verify that the flyout is is positioned with the top left corner of its border box located at
+                // Verify that the flyout is positioned with the top left corner of its border box located at
                 // the location specified by the testParameter.
                 return new WinJS.Promise(function (completePromise) {
                     menu.onaftershow = () => {
                         menu.onaftershow = null;
-                        var menuStyle = getComputedStyle(menu.element);
                         var menuRect = menu.element.getBoundingClientRect();
-                        var marginTop = WinJS.Utilities.convertToPixels(menu.element, menuStyle.marginTop);
-                        var marginLeft = WinJS.Utilities.convertToPixels(menu.element, menuStyle.marginLeft);
 
                         LiveUnit.Assert.areEqual(testY, menuRect.top,
                             testParameterType + ": Flyout should be top aligned with the y coordinate");
@@ -851,7 +847,7 @@ module CorsicaTests {
             }
 
             testShowAt_WithCoordinates()
-                .then(testShowAt_WithPointerEvent)
+                .then(testShowAt_WithMouseEvent)
                 .done(() => {
                     OverlayHelpers.disposeAndRemove(menuElement);
                     complete();
