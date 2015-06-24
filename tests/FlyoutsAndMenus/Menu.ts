@@ -848,7 +848,7 @@ module CorsicaTests {
             }
 
             function verifyPositionOnScreen(testParameter, testParameterType): WinJS.Promise<any> {
-                // Verify that the flyout is positioned with the top left corner of its border box located at
+                // Verify that the menu is positioned with the top left corner of its border box located at
                 // the location specified by the testParameter.
                 return new WinJS.Promise(function (completePromise) {
                     menu.onaftershow = () => {
@@ -856,9 +856,9 @@ module CorsicaTests {
                         var menuRect = menu.element.getBoundingClientRect();
 
                         LiveUnit.Assert.areEqual(testY, menuRect.top,
-                            testParameterType + ": Flyout should be top aligned with the y coordinate");
+                            testParameterType + ": Menu should be top aligned with the y coordinate");
                         LiveUnit.Assert.areEqual(testX, menuRect.left,
-                            testParameterType + ": Flyout should be left aligned with the x coordinate");
+                            testParameterType + ": Menu should be left aligned with the x coordinate");
 
                         menu.onafterhide = function () {
                             menu.onafterhide = null;
