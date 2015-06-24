@@ -667,8 +667,8 @@ define([
                         this._currentAlignment = alignment;
                     }
 
-                    // Add this flyout to the correct position cascadingStack, first collapsing flyouts in the 
-                    // current stack that are not anchored ancestors to this flyout.
+                    // Add this flyout to the correct position in the cascadingStack, first collapsing flyouts 
+                    // in the current stack that are not anchored ancestors to this flyout.
                     Flyout._cascadeManager.appendFlyout(this);
 
                     // If we're animating (eg baseShow is going to fail), or the cascadeManager is in the 
