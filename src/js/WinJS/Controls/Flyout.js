@@ -613,15 +613,13 @@ define([
                 },
 
                 _hide: function Flyout_hide() {
-                    if (!this.hidden) {
 
-                        // First close all subflyout descendants in the cascade.
-                        // Any calls to collapseFlyout through reentrancy should nop.
-                        Flyout._cascadeManager.collapseFlyout(this);
+                    // First close all subflyout descendants in the cascade.
+                    // Any calls to collapseFlyout through reentrancy should nop.
+                    Flyout._cascadeManager.collapseFlyout(this);
 
-                        if (this._baseHide()) {
-                            Flyout._cascadeManager.flyoutHiding(this);
-                        }
+                    if (this._baseHide()) {
+                        Flyout._cascadeManager.flyoutHiding(this);
                     }
                 },
 
@@ -630,93 +628,95 @@ define([
                 },
 
                 _baseFlyoutShow: function Flyout_baseFlyoutShow(anchor, placement, alignment) {
-                    if (this.hidden && !this.disabled && !this._disposed) {
+                    if (this.disabled || this._disposed) {
+                        // Don't do anything.
+                        return;
+                    }
 
-                        // Pick up defaults
-                        if (!anchor) {
-                            anchor = this._anchor;
+                    // Pick up defaults
+                    if (!anchor) {
+                        anchor = this._anchor;
+                    }
+                    if (!placement) {
+                        placement = this._placement;
+                    }
+                    if (!alignment) {
+                        alignment = this._alignment;
+                    }
+
+                    // Dereference the anchor if necessary
+                    if (typeof anchor === "string") {
+                        anchor = _Global.document.getElementById(anchor);
+                    } else if (anchor && anchor.element) {
+                        anchor = anchor.element;
+                    }
+
+                    // We expect an anchor
+                    if (!anchor) {
+                        // If we have _nextLeft, etc., then we were continuing an old animation, so that's OK
+                        if (!this._reuseCurrent) {
+                            throw new _ErrorFromName("WinJS.UI.Flyout.NoAnchor", strings.noAnchor);
                         }
-                        if (!placement) {
-                            placement = this._placement;
-                        }
-                        if (!alignment) {
-                            alignment = this._alignment;
-                        }
+                        // Last call was incomplete, so reuse the previous _current values.
+                        this._reuseCurrent = null;
+                    } else {
+                        // Remember the anchor so that if we lose focus we can go back
+                        this._currentAnchor = anchor;
+                        // Remember current values
+                        this._currentPlacement = placement;
+                        this._currentAlignment = alignment;
+                    }
 
-                        // Dereference the anchor if necessary
-                        if (typeof anchor === "string") {
-                            anchor = _Global.document.getElementById(anchor);
-                        } else if (anchor && anchor.element) {
-                            anchor = anchor.element;
-                        }
+                    // Add this flyout to the correct position cascadingStack, first collapsing flyouts in the 
+                    // current stack that are not anchored ancestors to this flyout.
+                    Flyout._cascadeManager.appendFlyout(this);
 
-                        // We expect an anchor
-                        if (!anchor) {
-                            // If we have _nextLeft, etc., then we were continuing an old animation, so that's OK
-                            if (!this._reuseCurrent) {
-                                throw new _ErrorFromName("WinJS.UI.Flyout.NoAnchor", strings.noAnchor);
-                            }
-                            // Last call was incomplete, so reuse the previous _current values.
-                            this._reuseCurrent = null;
-                        } else {
-                            // Remember the anchor so that if we lose focus we can go back
-                            this._currentAnchor = anchor;
-                            // Remember current values
-                            this._currentPlacement = placement;
-                            this._currentAlignment = alignment;
-                        }
-
-                        // Add this flyout to the correct position cascadingStack, first collapsing flyouts in the 
-                        // current stack that are not anchored ancestors to this flyout.
-                        Flyout._cascadeManager.appendFlyout(this);
-
-                        // If we're animating (eg baseShow is going to fail), or the cascadeManager is in the 
-                        // middle of updating the cascade, then we have to try again later.
-                        if (this._element.winAnimating) {
-                            this._reuseCurrent = true;
-                            // Queue us up to wait for the current animation to finish.
-                            // _checkDoNext() is always scheduled after the current animation completes.
-                            this._doNext = "show";
-                        } else if (Flyout._cascadeManager.reentrancyLock) {
-                            this._reuseCurrent = true;
-                            // Queue us up to wait for the current animation to finish.
-                            // Schedule a call to _checkDoNext() for when the cascadeManager unlocks.
-                            this._doNext = "show";
-                            var that = this;
-                            Flyout._cascadeManager.unlocked.then(function () { that._checkDoNext(); });
-                        } else {
-                            // We call our base _baseShow to handle the actual animation
-                            if (this._baseShow()) {
-                                // (_baseShow shouldn't ever fail because we tested winAnimating above).
-                                if (!_ElementUtilities.hasClass(this.element, "win-menu")) {
-                                    // Verify that the firstDiv is in the correct location.
-                                    // Move it to the correct location or add it if not.
-                                    var _elms = this._element.getElementsByTagName("*");
-                                    var firstDiv = this.element.querySelectorAll(".win-first");
-                                    if (this.element.children.length && !_ElementUtilities.hasClass(this.element.children[0], _Constants.firstDivClass)) {
-                                        if (firstDiv && firstDiv.length > 0) {
-                                            firstDiv.item(0).parentNode.removeChild(firstDiv.item(0));
-                                        }
-
-                                        firstDiv = this._addFirstDiv();
+                    // If we're animating (eg baseShow is going to fail), or the cascadeManager is in the 
+                    // middle of updating the cascade, then we have to try again later.
+                    if (this._element.winAnimating) {
+                        this._reuseCurrent = true;
+                        // Queue us up to wait for the current animation to finish.
+                        // _checkDoNext() is always scheduled after the current animation completes.
+                        this._doNext = "show";
+                    } else if (Flyout._cascadeManager.reentrancyLock) {
+                        this._reuseCurrent = true;
+                        // Queue us up to wait for the current animation to finish.
+                        // Schedule a call to _checkDoNext() for when the cascadeManager unlocks.
+                        this._doNext = "show";
+                        var that = this;
+                        Flyout._cascadeManager.unlocked.then(function () { that._checkDoNext(); });
+                    } else {
+                        // We call our base _baseShow to handle the actual animation
+                        if (this._baseShow()) {
+                            // (_baseShow shouldn't ever fail because we tested winAnimating above).
+                            if (!_ElementUtilities.hasClass(this.element, "win-menu")) {
+                                // Verify that the firstDiv is in the correct location.
+                                // Move it to the correct location or add it if not.
+                                var _elms = this._element.getElementsByTagName("*");
+                                var firstDiv = this.element.querySelectorAll(".win-first");
+                                if (this.element.children.length && !_ElementUtilities.hasClass(this.element.children[0], _Constants.firstDivClass)) {
+                                    if (firstDiv && firstDiv.length > 0) {
+                                        firstDiv.item(0).parentNode.removeChild(firstDiv.item(0));
                                     }
-                                    firstDiv.tabIndex = _ElementUtilities._getLowestTabIndexInList(_elms);
 
-                                    // Verify that the finalDiv is in the correct location.
-                                    // Move it to the correct location or add it if not.
-                                    var finalDiv = this.element.querySelectorAll(".win-final");
-                                    if (!_ElementUtilities.hasClass(this.element.children[this.element.children.length - 1], _Constants.finalDivClass)) {
-                                        if (finalDiv && finalDiv.length > 0) {
-                                            finalDiv.item(0).parentNode.removeChild(finalDiv.item(0));
-                                        }
-
-                                        finalDiv = this._addFinalDiv();
-                                    }
-                                    finalDiv.tabIndex = _ElementUtilities._getHighestTabIndexInList(_elms);
+                                    firstDiv = this._addFirstDiv();
                                 }
+                                firstDiv.tabIndex = _ElementUtilities._getLowestTabIndexInList(_elms);
 
-                                Flyout._cascadeManager.flyoutShown(this);
+                                // Verify that the finalDiv is in the correct location.
+                                // Move it to the correct location or add it if not.
+                                var finalDiv = this.element.querySelectorAll(".win-final");
+                                if (!_ElementUtilities.hasClass(this.element.children[this.element.children.length - 1], _Constants.finalDivClass)) {
+                                    if (finalDiv && finalDiv.length > 0) {
+                                        finalDiv.item(0).parentNode.removeChild(finalDiv.item(0));
+                                    }
+
+                                    finalDiv = this._addFinalDiv();
+                                }
+                                finalDiv.tabIndex = _ElementUtilities._getHighestTabIndexInList(_elms);
                             }
+
+                            Flyout._cascadeManager.flyoutShown(this);
                         }
                     }
                 },
