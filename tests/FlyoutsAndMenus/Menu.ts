@@ -815,11 +815,10 @@ module CorsicaTests {
 
             var requiredWindowDimension = 100;
             // For this test to be valid, the Menu's MarginBox must fit within the confines of the visual.
-            // viewport after we've aligned the top / left of the Menu's paddingbox to the specified point.
+            // viewport after we've aligned the top / left of the Menu's borderbox to the specified point.
             // Otherwise its considered an out of bounds point and is handled in a later test case.
-            LiveUnit.Assert.isTrue(window.innerWidth >= requiredWindowDimension, "TEST ERROR: test expects visual viewport width >= 100px");
-            LiveUnit.Assert.isTrue(window.innerHeight >= requiredWindowDimension, "TEST ERROR: test expects visual viewport width >= 100px");
-
+            LiveUnit.Assert.isTrue(window.innerWidth >= requiredWindowDimension, "TEST ERROR: test expects visual viewport width >= " + requiredWindowDimension + "px");
+            LiveUnit.Assert.isTrue(window.innerHeight >= requiredWindowDimension, "TEST ERROR: test expects visual viewport height >= " + requiredWindowDimension + "px");
 
             // Find a valid "in bounds point" within the window to pass to Menu.showAt()
             var style = menu.element.style;
