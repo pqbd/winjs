@@ -822,18 +822,17 @@ module CorsicaTests {
 
             // Find a valid "in bounds point" within the window to pass to Menu.showAt()
             var style = menu.element.style;
-            var borderBoxSize = 50;
-            var margins = 5;
+            var contentSize = 50;
+            var margins = WinJS.Utilities._getPreciseMargins(menu.element);
 
-            style.boxSizing = "border-box";
-            style.width = borderBoxSize + "px";
-            style.maxWidth = borderBoxSize + "px";
-            style.height = borderBoxSize + "px";
-            style.maxHeight = borderBoxSize + "px";
-            style.margin = margins + "px";
+            style.width = contentSize + "px";
+            style.maxWidth = contentSize + "px";
+            style.height = contentSize + "px";
+            style.maxHeight = contentSize + "px";
 
-            var testX = margins + 5;
-            var testY = margins + 5;
+            // Make sure the point we choose for the top/left of the borderbox also leaves the marginbox clear of the viewport top/left edge.
+            var testX = 2 + margins.left;
+            var testY = 2 + margins.top;
 
             function testShowAt_WithCoordinates(): WinJS.Promise<any> {
                 var coordinates = { x: testX, y: testY };
