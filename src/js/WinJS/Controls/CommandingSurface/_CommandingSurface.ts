@@ -1191,6 +1191,7 @@ export class _CommandingSurface {
     }
 
     private _getVisiblePrimaryCommandsLocation() {
+        // Determine which primary Commands can fit in the actionarea and which primary commands will overflow.
         this._writeProfilerMark("_getVisiblePrimaryCommandsLocation,info");
 
         var actionAreaCommands: _Command.ICommand[] = [];
@@ -1210,7 +1211,6 @@ export class _CommandingSurface {
             availableWidth -= sortedCommandsInfo[i].width;
 
             // Reserve space for the overflow button unless we are evaluating the last command and there are no secondary commands.
-            // The overflow button needs space if there are secondary commands, or we are not evaluating the last command.
             reservedSpace = (hasSecondaryCommands || (i < len - 1) ? this._cachedMeasurements.overflowButtonWidth : 0);
 
             if (availableWidth < reservedSpace) {
