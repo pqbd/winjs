@@ -826,9 +826,11 @@ module CorsicaTests {
             var margins = WinJS.Utilities._getPreciseMargins(menu.element);
 
             style.width = contentSize + "px";
+            style.minWidth = contentSize + "px";
             style.maxWidth = contentSize + "px";
             style.height = contentSize + "px";
             style.maxHeight = contentSize + "px";
+            style.minHeight = contentSize + "px";
 
             // Make sure the point we choose for the top/left of the borderbox also leaves the marginbox clear of the viewport top/left edge.
             var testX = 2 + margins.left;
