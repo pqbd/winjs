@@ -340,6 +340,53 @@ module CorsicaTests {
             LiveUnit.Assert.areNotEqual("none", getComputedStyle(commandingSurface._dom.overflowButton).display, "Overflow button should be visible when the primary commands overflow");
         }
 
+        testOverflowButtonVisibility(complete) {
+
+            var commandingSurface = new _CommandingSurface(this._element, {});
+            var controlWidth = 500;
+            this._element.style.width = controlWidth + "px";
+
+            var primaryCommand = new Command(null, { section: 'primary', type: 'button', label: 'primary command', icon: '1' });
+            var secondaryCommand = new Command(null, { section: 'secondary', type: 'button', label: 'secondary command' });
+            var overflowCommand = new Command(null, { section: 'primary', type: 'content', label: 'overflow command', });
+            overflowCommand.element.style.width = (controlWidth + 5) + "px"; // wide enough to always overflow.
+
+            var dataTestCases = [
+                { name: "Empty", commands: [] },
+                { name: "PrimayCommandsOnly_NoOverflow", commands: [primaryCommand] },
+                { name: "PrimaryCommandsOnly_WithOverflow", commands: [primaryCommand, overflowCommand },
+                { name: "SecondaryCommandsOnly", commands: [secondaryCommand] },
+                { name: "PrimaryAndSecondaryCommands", commands: [primaryCommand, secondaryCommand] },
+            ];
+
+            //Object.keys(_CommandingSurface.ClosedDisplayMode).forEach((mode) => {
+            Helper.Promise.forEach(Object.keys(_CommandingSurface.ClosedDisplayMode), (mode) => {
+
+                commandingSurface.closedDisplayMode = mode;
+
+                //Object.keys(dataTestCases).forEach((testCase) => {
+                return Helper.Promise.forEach(Object.keys(dataTestCases), (testCase) => {
+                    return new WinJS.Promise((completePromise) => {
+
+                        commandingSurface._layoutCompleteCallback = () => {
+                            LiveUnit.Assert.Fail("implement this test closedDisplayMode:" + mode + ",  );
+                        }
+
+
+
+                    })
+
+
+                });
+
+
+                LiveUnit.Assert.areEqual("none", getComputedStyle(commandingSurface._dom.overflowButton).display, "Overflow button should be hidden when the primary commands fit");
+            }).done(complete);
+
+
+            //LiveUnit.Assert.areEqual("none", getComputedStyle(commandingSurface._dom.overflowButton).display, "Overflow button should be hidden when the primary commands fit");
+        }
+
         testForceLayout() {
             // Verify that force layout will correctly update commands layout when:
             // 1. The CommandingSurface constructor could not measure any of the commands because the CommandingSurface element was originally display "none".
