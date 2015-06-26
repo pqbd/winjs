@@ -71,6 +71,10 @@ module CorsicaTests {
         }
     }
 
+    interface IOverflowButtonVisibilityTestCase {
+        name: string; commands: Array<WinJS.UI.PrivateCommand>; expectsOverflowCommands: boolean;
+    }
+
     export class _CommandingSurfaceTests {
         "use strict";
 
@@ -349,15 +353,18 @@ module CorsicaTests {
             var primaryCommand = new Command(null, { section: 'primary', type: 'button', label: 'primary command', icon: '1' });
             var secondaryCommand = new Command(null, { section: 'secondary', type: 'button', label: 'secondary command' });
             var overflowCommand = new Command(null, { section: 'primary', type: 'content', label: 'overflow command', });
-            overflowCommand.element.style.width = (controlWidth + 5) + "px"; // wide enough to always overflow.
+            overflowCommand.element.style.width = (controlWidth + 5) + "px"; // Make it wide enough to always force overflow.
 
-            var dataTestCases = [
-                { name: "Empty", commands: [] },
-                { name: "PrimayCommandsOnly_NoOverflow", commands: [primaryCommand] },
-                { name: "PrimaryCommandsOnly_WithOverflow", commands: [primaryCommand, overflowCommand },
-                { name: "SecondaryCommandsOnly", commands: [secondaryCommand] },
-                { name: "PrimaryAndSecondaryCommands", commands: [primaryCommand, secondaryCommand] },
+            var dataTestCases: Array<IOverflowButtonVisibilityTestCase> = [
+                { name: "NoCommands", commands: [], expectsOverflowCommands: false },
+                { name: "PrimayCommandsOnly_NoOverflow", commands: [primaryCommand], expectsOverflowCommands: false  },
+                { name: "PrimaryCommandsOnly_SomeOverflow", commands: [primaryCommand, overflowCommand], expectsOverflowCommands: true  },
+                { name: "SecondaryCommandsOnly", commands: [secondaryCommand], expectsOverflowCommands: true  },
+                { name: "PrimaryAndSecondaryCommands", commands: [primaryCommand, secondaryCommand], expectsOverflowCommands: true  },
             ];
+
+
+            // Jesse
 
             //Object.keys(_CommandingSurface.ClosedDisplayMode).forEach((mode) => {
             Helper.Promise.forEach(Object.keys(_CommandingSurface.ClosedDisplayMode), (mode) => {
@@ -365,18 +372,50 @@ module CorsicaTests {
                 commandingSurface.closedDisplayMode = mode;
 
                 //Object.keys(dataTestCases).forEach((testCase) => {
-                return Helper.Promise.forEach(Object.keys(dataTestCases), (testCase) => {
+                return Helper.Promise.forEach(dataTestCases, (testCase) => {
                     return new WinJS.Promise((completePromise) => {
-
                         commandingSurface._layoutCompleteCallback = () => {
-                            LiveUnit.Assert.Fail("implement this test closedDisplayMode:" + mode + ",  );
-                        }
 
+                            var overflowButton = commandingSurface._dom.overflowButton;
+                            var hasOverflowButton = overflowButton.style.display !== "none";
 
+                            var overflowArea = commandingSurface._dom.overflowArea;
+                            var overflowAreaCommands = Helper._CommandingSurface.getVisibleCommandsInElement(overflowArea);
+                            var hasOverflowCommands = overflowAreaCommands.length > 0;
 
+                            // PRECONDITION: Sanity test that the testCase's expected configuration for overflow commands 
+                            // has been met.
+                            LiveUnit.Assert.areEqual(testCase.expectsOverflowCommands, hasOverflowCommands,
+                                "TEST ERROR: Configuration for test: " + testCase.name + " with closedDisplayMode:" + mode +
+                                " has incorrect presence of commands in overflowarea");
+
+                            switch (mode) {
+                                case _CommandingSurface.ClosedDisplayMode.none:
+                                case _CommandingSurface.ClosedDisplayMode.minimal:
+                                case _CommandingSurface.ClosedDisplayMode.compact:
+                                    // These ClosedDisplayModes have an expandable actionarea when shown.
+                                    // They should always have an overflow button.
+                                    LiveUnit.Assert.areEqual(true, hasOverflowButton,
+                                        "Overflow button should be visible when closedDisplayMode = " + mode);
+                                    break;
+                                case _CommandingSurface.ClosedDisplayMode.full:
+                                    // This ClosedDisplayModes does not have an expandable actionarea when shown.
+                                    // It should only have an overflow button if there are commands in the overflowarea.
+                                    if (hasOverflowCommands) {
+                                        LiveUnit.Assert.areEqual(true, hasOverflowButton,
+                                            "Overflow button should be visible when closedDisplayMode = " + mode + ", and there ARE commands in the overflowArea");
+                                    } else {
+                                        LiveUnit.Assert.areEqual(false, hasOverflowButton,
+                                            "Overflow button should be hidden when closedDisplayMode = " + mode + ", and there are NO commands in the overflowArea");
+                                    }
+                                    break;
+                                default:
+                                    LiveUnit.Assert.fail("TEST ERROR: Unknown ClosedDisplayMode enum value: " + mode);
+                                    break;
+                            }
+                        };
+                        commandingSurface.data = new WinJS.Binding.List(testCase.commands);
                     })
-
-
                 });
 
 

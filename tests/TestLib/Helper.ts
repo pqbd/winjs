@@ -1720,7 +1720,7 @@ module Helper {
 
 module Helper {
     export module Promise {
-        export function forEach(array: Array<any>, asyncCallbackFn: (value?, index?, array?) => any): WinJS.Promise<any> {
+        export function forEach<T>(array: Array<T>, asyncCallbackFn: (value?:T, index?, array?:Array<T>) => any): WinJS.Promise<any> {
             // Execute an asynchronous forEach loop over an array. The asynchronous forEach loop will apply the asyncCallbackFn parameter to subsequent values in the array parameter,
             // only after the Promise returned by applying asyncCallbackFn to the current value in the array has been completed.
             //
