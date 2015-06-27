@@ -127,6 +127,7 @@ export class _CommandingSurface {
     private _winKeyboard: _KeyboardBehavior._WinKeyboard;
     private _refreshBound: () => void;
     private _resizeHandlerBound: (ev: any) => any;
+    private _updateTabIndicesThrottled: Function;
     private _dataChangedEvents = ["itemchanged", "iteminserted", "itemmoved", "itemremoved", "reload"];
     private _machine: _OpenCloseMachine.OpenCloseMachine;
     private _data: BindingList.List<_Command.ICommand>;
@@ -156,10 +157,12 @@ export class _CommandingSurface {
         root: HTMLElement;
         actionArea: HTMLElement;
         actionAreaContainer: HTMLElement;
-        spacer: HTMLDivElement;
-        overflowButton: HTMLButtonElement;
+        firstTabStop: HTMLElement;
+        finalTabStop: HTMLElement;
         overflowArea: HTMLElement;
         overflowAreaContainer: HTMLElement;
+        overflowButton: HTMLButtonElement;
+        spacer: HTMLDivElement;
     };
 
     /// Display options for the actionarea when the _CommandingSurface is closed.
@@ -240,9 +243,20 @@ export class _CommandingSurface {
 
         this._writeProfilerMark("constructor,StartTM");
 
-        // Check to make sure we weren't duplicated
-        if (element && element["winControl"]) {
-            throw new _ErrorFromName("WinJS.UI._CommandingSurface.DuplicateConstruction", strings.duplicateConstruction);
+
+        if (element) {
+            // Check to make sure we weren't duplicated
+            if (element["winControl"]) {
+                throw new _ErrorFromName("WinJS.UI._CommandingSurface.DuplicateConstruction", strings.duplicateConstruction);
+            }
+
+            if (!options.data) {
+                // Shallow copy object so we can modify it.
+                options = _BaseUtils._shallowCopy(options);
+
+                // Get default data from any command defined in markup.
+                options.data = options.data || this._getDataFromDOMElements(element);
+            }
         }
 
         this._initializeDom(element || _Global.document.createElement("div"));
@@ -285,18 +299,30 @@ export class _CommandingSurface {
         this.overflowDirection = _Constants.defaultOverflowDirection;
         this.closedDisplayMode = _Constants.defaultClosedDisplayMode;
         this.opened = this._isOpenedMode;
-        if (!options.data) {
-            // Shallow copy object so we can modify it.
-            options = _BaseUtils._shallowCopy(options);
 
-            // Set default data
-            options.data = options.data || this._getDataFromDOMElements();
-        }
         _Control.setOptions(this, options);
 
         // Event handlers
         _ElementUtilities._resizeNotifier.subscribe(this._dom.root, this._resizeHandlerBound);
         this._dom.root.addEventListener('keydown', this._keyDownHandler.bind(this));
+        _ElementUtilities._addEventListener(this._dom.firstTabStop, "focusin", () => {
+            var firstTabIndex = this._dom.firstTabStop.tabIndex;
+            var finalTabIndex = this._dom.finalTabStop.tabIndex;
+            this._dom.firstTabStop.tabIndex = -1;
+            this._dom.finalTabStop.tabIndex = -1;
+            _ElementUtilities._focusLastFocusableElement(this._dom.root);
+            this._dom.firstTabStop.tabIndex = firstTabIndex;
+            this._dom.finalTabStop.tabIndex = finalTabIndex;
+        });
+        _ElementUtilities._addEventListener(this._dom.finalTabStop, "focusin", () => {
+            var firstTabIndex = this._dom.firstTabStop.tabIndex;
+            var finalTabIndex = this._dom.finalTabStop.tabIndex;
+            this._dom.firstTabStop.tabIndex = -1;
+            this._dom.finalTabStop.tabIndex = -1;
+            _ElementUtilities._focusFirstFocusableElement(this._dom.root);
+            this._dom.firstTabStop.tabIndex = firstTabIndex;
+            this._dom.finalTabStop.tabIndex = finalTabIndex;
+        });
 
         // Exit the Init state.
         _ElementUtilities._inDom(this._dom.root).then(() => {
@@ -421,7 +447,7 @@ export class _CommandingSurface {
                     overflowAreaHeight: boundingRects.overflowArea.height,
                     menuPositionedAbove: (that.overflowDirection === OverflowDirection.top),
                 }).then(function () {
-                    _ElementUtilities.removeClass(that.element, _Constants.ClassNames.openingClass);
+                        _ElementUtilities.removeClass(that.element, _Constants.ClassNames.openingClass);
                         that._clearAnimation();
                     });
             }
@@ -485,9 +511,12 @@ export class _CommandingSurface {
         _ElementUtilities.addClass(root, _Constants.ClassNames.controlCssClass);
         _ElementUtilities.addClass(root, _Constants.ClassNames.disposableCssClass);
 
+        var firstTabStop = _Global.document.createElement("div");
+        _ElementUtilities.addClass(firstTabStop, _Constants.ClassNames.tabStop);
+        root.appendChild(firstTabStop);
+
         var actionArea = _Global.document.createElement("div");
         _ElementUtilities.addClass(actionArea, _Constants.ClassNames.actionAreaCssClass);
-        _ElementUtilities._reparentChildren(root, actionArea);
         var actionAreaInsetOutline = document.createElement("DIV");
         _ElementUtilities.addClass(actionAreaInsetOutline, _Constants.ClassNames.insetOutlineClass);
         var actionAreaContainer = _Global.document.createElement("div");
@@ -522,14 +551,20 @@ export class _CommandingSurface {
         overflowAreaContainer.appendChild(overflowInsetOutline);
         root.appendChild(overflowAreaContainer);
 
+        var finalTabStop = _Global.document.createElement("div");
+        _ElementUtilities.addClass(finalTabStop, _Constants.ClassNames.tabStop);
+        root.appendChild(finalTabStop);
+
         this._dom = {
             root: root,
             actionArea: actionArea,
             actionAreaContainer: actionAreaContainer,
-            spacer: spacer,
-            overflowButton: overflowButton,
+            firstTabStop: firstTabStop,
+            finalTabStop: finalTabStop,
             overflowArea: overflowArea,
-            overflowAreaContainer: overflowAreaContainer
+            overflowAreaContainer: overflowAreaContainer,
+            overflowButton: overflowButton,
+            spacer: spacer,
         };
     }
 
@@ -538,7 +573,6 @@ export class _CommandingSurface {
             elements: [],
             focusedIndex: -1
         };
-        var elementsInReach = Array.prototype.slice.call(this._dom.actionArea.children);
 
         var elementsInReach = Array.prototype.slice.call(this._dom.actionArea.children);
         if (this._dom.overflowArea.style.display !== "none") {
@@ -643,6 +677,31 @@ export class _CommandingSurface {
         }
     }
 
+    // _updateTabIndices and _updateTabIndicesImpl are used in tests
+    _updateTabIndices(): void {
+        if (!this._updateTabIndicesThrottled) {
+            this._updateTabIndicesThrottled = _BaseUtils._throttledFunction(100, this._updateTabIndicesImpl.bind(this));
+        }
+        this._updateTabIndicesThrottled();
+    }
+    _updateTabIndicesImpl(): void {
+        // If the CommandingSurface is open, tabbing should carousel within the control, 
+        // to avoid triggering light dismiss by loss of focus.
+
+        var lowTabIndex = -1;
+        var highTabIndex = -1;
+
+        if (this._isOpenedMode) {
+            var actionAreaIndex = _ElementUtilities._getHighAndLowTabIndices(this._dom.actionArea);
+            var overflowAreaIndex = _ElementUtilities._getHighAndLowTabIndices(this._dom.overflowArea);
+            lowTabIndex = Math.min(actionAreaIndex.lowest, overflowAreaIndex.lowest);
+            highTabIndex = Math.min(actionAreaIndex.highest, overflowAreaIndex.highest);
+        }
+
+        this._dom.firstTabStop.tabIndex = lowTabIndex;
+        this._dom.finalTabStop.tabIndex = highTabIndex;
+    }
+
     private _keyDownHandler(ev: any) {
         if (!ev.altKey) {
             if (_ElementUtilities._matchesSelector(ev.target, ".win-interactive, .win-interactive *")) {
@@ -675,6 +734,10 @@ export class _CommandingSurface {
                         var index = focusableElementsInfo.elements.length - 1;
                         targetCommand = this._getLastElementFocus(focusableElementsInfo.elements[index]);
                         break;
+
+                    case Key.tab:
+                        this._updateTabIndices();
+                        break;
                 }
             }
 
@@ -685,19 +748,19 @@ export class _CommandingSurface {
         }
     }
 
-    private _getDataFromDOMElements(): BindingList.List<_Command.ICommand> {
+    private _getDataFromDOMElements(root: HTMLElement): BindingList.List<_Command.ICommand> {
         this._writeProfilerMark("_getDataFromDOMElements,info");
 
-        ControlProcessor.processAll(this._dom.actionArea, /*skip root*/ true);
+        ControlProcessor.processAll(root, /*skip root*/ true);
 
         var commands: _Command.ICommand[] = [];
-        var childrenLength = this._dom.actionArea.children.length;
+        var childrenLength = root.children.length;
         var child: Element;
         for (var i = 0; i < childrenLength; i++) {
-            child = this._dom.actionArea.children[i];
+            child = root.children[i];
             if (child["winControl"] && child["winControl"] instanceof _Command.AppBarCommand) {
                 commands.push(child["winControl"]);
-            } else if (child !== this._dom.overflowButton && child !== this._dom.spacer) {
+            } else {
                 throw new _ErrorFromName("WinJS.UI._CommandingSurface.MustContainCommands", strings.mustContainCommands);
             }
         }
@@ -884,7 +947,7 @@ export class _CommandingSurface {
             },
             update(): void {
                 _renderDisplayMode();
-                _updateCommands()
+                _updateCommands();
             },
             dataDirty: () => {
                 _currentLayoutStage = Math.max(CommandLayoutPipeline.newDataStage, _currentLayoutStage);

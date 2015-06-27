@@ -1012,11 +1012,11 @@ export declare module _resizeNotifier {
 }
 
 export declare module _inputPaneListener {
-    export function addEventListener(element: HTMLElement, event: string,  handler: (ev: any) => any): void;
+    export function addEventListener(element: HTMLElement, event: string, handler: (ev: any) => any): void;
     export function removeEventListener(element: HTMLElement, event: string, handler: (ev: any) => any): void;
 }
 
-
+export declare function _getHighAndLowTabIndices(element: HTMLElement): { highest: number; lowest: number };
 export declare function _addInsertedNotifier(element: HTMLElement): void;
 export declare function _inDom(element: HTMLElement): Promise<any>;
 export declare function _reparentChildren(originalParent: HTMLElement, destinationParent: HTMLElement): void;
@@ -1032,6 +1032,7 @@ export declare function _trySetActiveOnAnyElement(elem: HTMLElement, scroller?: 
 export declare function _tryFocus(elem: HTMLElement, useSetActive?: boolean, scroller?: HTMLElement): boolean;
 export declare function _trySetActive(elem: HTMLElement, scroller?: HTMLElement): boolean;
 export declare function _focusFirstFocusableElement(rootEl: HTMLElement, useSetActive?: boolean, scroller?: HTMLElement): boolean;
+export declare function _focusLastFocusableElement(rootEl: HTMLElement, useSetActive?: boolean, scroller?: HTMLElement): boolean;
 export declare function _setPointerCapture(element: HTMLElement, pointerId: number): void;
 export declare function _releasePointerCapture(element: HTMLElement, pointerId: number): void;
 export declare function _convertToPrecisePixels(value: string): number;
@@ -1044,5 +1045,5 @@ export declare function _ensureId(element: HTMLElement): void;
 export declare function _setAttribute(element: HTMLElement, attribute: string, value: string): void;
 export declare var _MutationObserver: {
     prototype: IMutationObserverShim;
-    new(callback: (mutations: IMutationRecordShim[]) => void): IMutationObserverShim;
+    new (callback: (mutations: IMutationRecordShim[]) => void): IMutationObserverShim;
 };
