@@ -55,6 +55,16 @@ module CorsicaTests {
         LiveUnit.Assert.isFalse(commandingSurface.opened, "after close: CommandingSurface should not be in opened state");
     }
 
+    function verifyTabIndices(commandingSurface: WinJS.UI.PrivateCommandingSurface, firstTabStopIndex: number, fiinalTabStopIndex: number) {
+        // lowest tab index
+        LiveUnit.Assert.areEqual(firstTabStopIndex, +commandingSurface._dom.firstTabStop.tabIndex,
+            "firstTabStop doesn't match expected lowest tab index");
+
+        // highest tab index
+        LiveUnit.Assert.areEqual(fiinalTabStopIndex, commandingSurface._dom.finalTabStop.tabIndex,
+            "finalTabStop doesn't match expected highest tab index");
+    }
+
     function failEventHandler(eventName: string, msg?: string) {
         return function () {
             LiveUnit.Assert.fail("Failure, " + eventName + " dectected: " + msg);
@@ -1718,6 +1728,62 @@ module CorsicaTests {
             commandingSurface._dom.overflowButton.click()
             LiveUnit.Assert.isTrue(commandingSurface.opened)
             Helper._CommandingSurface.verifyRenderedOpened(commandingSurface);
+        }
+
+        testTabIndicesWhileClosed() {
+            // Commanding surface should not carousel tab key focus movement while closed.
+            // Verify that both the elements we use to trap focus have tab indicies -1 when 
+            // the tab keydown event fires while the commanding surface is closed.
+
+            var innerHTML =
+                '<button tabIndex="7" data-win-control="WinJS.UI.AppBarCommand" data-win-options="{type: \'button\', id:\'button\'}" ></button>' +
+                '<button tabIndex="11" data-win-control="WinJS.UI.AppBarCommand" data-win-options="{type: \'toggle\', id:\'toggle\'}" ></button>' +
+                '<hr data-win-control="WinJS.UI.AppBarCommand" data-win-options="{type: \'separator\', id:\'separator\'}" \>' +
+                '<div tabIndex="1" data-win-control="WinJS.UI.AppBarCommand" data-win-options="{type: \'content\', id:\'content\'}" >' +
+                    '<input tabIndex="0" type="text" />' +
+                    '<input tabIndex="3" type ="range" / > ' +
+                '</div>' +
+                '<button tabIndex="-1" data-win-control="WinJS.UI.AppBarCommand" data-win-options="{type: flyout, id:\'flyout\'}" ></button>';
+
+            var firstTabStopIndex = -1;
+            var finalTabStopIndex = -1;
+
+            this._element.innerHTML = innerHTML;
+            var commandingSurface = new _CommandingSurface(this._element, { opened: false });
+            Helper._CommandingSurface.useSynchronousAnimations(commandingSurface);
+
+            // Tab key will cause the commandingSurface to update its tab indices
+            Helper.keydown(commandingSurface.element, WinJS.Utilities.Key.tab);
+
+            verifyTabIndices(commandingSurface, firstTabStopIndex, finalTabStopIndex);
+        }
+
+        testTabIndexOfZeroIsHighest() {
+            // Commanding surface should carousel tab key focus movement while open.
+
+            var innerHTML =
+                '<button tabIndex="7" data-win-control="WinJS.UI.AppBarCommand" data-win-options="{type: \'button\', id:\'button\'}" ></button>' +
+                '<button tabIndex="11" data-win-control="WinJS.UI.AppBarCommand" data-win-options="{type: \'toggle\', id:\'toggle\'}" ></button>' +
+                '<hr data-win-control="WinJS.UI.AppBarCommand" data-win-options="{type: \'separator\', id:\'separator\'}" \>' +
+                '<div tabIndex="2" data-win-control="WinJS.UI.AppBarCommand" data-win-options="{type: \'content\', id:\'content\'}" >' +
+                '<input tabIndex="0" type="text" />' +
+                '<input tabIndex="3" type ="range" / > ' +
+                '</div>' +
+                '<button tabIndex="-1" data-win-control="WinJS.UI.AppBarCommand" data-win-options="{type: \'flyout\', id:\'flyout\'}" ></button>';
+
+            var firstTabStopIndex = 2;
+            var finalTabStopIndex = 0;
+
+            this._element.innerHTML = innerHTML;
+            var commandingSurface = new _CommandingSurface(this._element, { opened: false });
+            Helper._CommandingSurface.useSynchronousAnimations(commandingSurface);
+
+            commandingSurface.open();
+
+            // Tab key will cause the commandingSurface to update its tab indices
+            Helper.keydown(commandingSurface.element, WinJS.Utilities.Key.tab);
+
+            verifyTabIndices(commandingSurface, firstTabStopIndex, finalTabStopIndex);
         }
 
         testDomLevel0_OpenCloseEvents() {

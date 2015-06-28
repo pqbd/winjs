@@ -33,6 +33,7 @@ module Helper._CommandingSurface {
                 }
             };
         };
+        commandingSurface._updateTabIndices = commandingSurface._updateTabIndicesImpl;
     }
 
     export function getVisibleCommandsInElement(element: HTMLElement) {

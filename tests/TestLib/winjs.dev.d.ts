@@ -499,11 +499,15 @@ declare module WinJS {
                 overflowButton: HTMLButtonElement;
                 overflowArea: HTMLElement;
                 overflowAreaContainer: HTMLElement;
+                firstTabStop: HTMLElement;
+                finalTabStop: HTMLElement;
             };
             _machine: IOpenCloseMachine;
             _layoutCompleteCallback(): any;
             _canMeasure(): boolean;
             _menuCommandProjections: PrivateMenuCommand[];
+            _updateTabIndices();
+            _updateTabIndicesImpl();
         }
 
         class PrivateAppBar extends WinJS.UI.AppBar {

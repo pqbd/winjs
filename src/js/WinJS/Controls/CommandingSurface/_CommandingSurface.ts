@@ -679,23 +679,19 @@ export class _CommandingSurface {
         this._updateTabIndicesThrottled();
     }
     _updateTabIndicesImpl(): void {
-        // If the CommandingSurface is open, tabbing should carousel within the control, 
-        // to avoid triggering light dismiss by loss of focus.
+        // If the CommandingSurface is open, tabbing should carousel within the control.
 
-        var lowTabIndex = -1;
-        var highTabIndex = -1;
+        var firstTabStopIndex = -1;
+        var finalTabStopIndex = -1;
 
         if (this._isOpenedMode) {
             var tabIndices = _ElementUtilities._getHighAndLowTabIndices(this._dom.content);
-            lowTabIndex = tabIndices.lowest;
-            highTabIndex = tabIndices.highest;
-            //var overflowAreaIndex = _ElementUtilities._getHighAndLowTabIndices(this._dom.overflowArea);
-            //lowTabIndex = Math.min(actionAreaIndex.lowest, overflowAreaIndex.lowest);
-            //highTabIndex = Math.max(actionAreaIndex.highest, overflowAreaIndex.highest);
-        }
+            firstTabStopIndex = tabIndices.lowest;
+            finalTabStopIndex = tabIndices.highest;
+        } 
 
-        this._dom.firstTabStop.tabIndex = lowTabIndex;
-        this._dom.finalTabStop.tabIndex = highTabIndex;
+        this._dom.firstTabStop.tabIndex = firstTabStopIndex;
+        this._dom.finalTabStop.tabIndex = finalTabStopIndex;
     }
 
     private _keyDownHandler(ev: any) {
