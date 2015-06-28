@@ -4,7 +4,8 @@
 export var ClassNames = {
     controlCssClass: "win-commandingsurface",
     disposableCssClass: "win-disposable",
-    tabStop: "win-commandingsurface-tabstop",
+    tabStopClass: "win-commandingsurface-tabstop",
+    contentClass: "win-commandingsurface-content",
     actionAreaCssClass: "win-commandingsurface-actionarea",
     actionAreaContainerCssClass: "win-commandingsurface-actionareacontainer",
     overflowButtonCssClass: "win-commandingsurface-overflowbutton",

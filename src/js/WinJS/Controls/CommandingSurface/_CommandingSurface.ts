@@ -154,15 +154,16 @@ export class _CommandingSurface {
 
     // Dom elements
     private _dom: {
-        root: HTMLElement;
+        root: HTMLElement
+        content: HTMLElement;
         actionArea: HTMLElement;
         actionAreaContainer: HTMLElement;
-        firstTabStop: HTMLElement;
-        finalTabStop: HTMLElement;
         overflowArea: HTMLElement;
         overflowAreaContainer: HTMLElement;
         overflowButton: HTMLButtonElement;
         spacer: HTMLDivElement;
+        firstTabStop: HTMLElement;
+        finalTabStop: HTMLElement;
     };
 
     /// Display options for the actionarea when the _CommandingSurface is closed.
@@ -306,22 +307,10 @@ export class _CommandingSurface {
         _ElementUtilities._resizeNotifier.subscribe(this._dom.root, this._resizeHandlerBound);
         this._dom.root.addEventListener('keydown', this._keyDownHandler.bind(this));
         _ElementUtilities._addEventListener(this._dom.firstTabStop, "focusin", () => {
-            var firstTabIndex = this._dom.firstTabStop.tabIndex;
-            var finalTabIndex = this._dom.finalTabStop.tabIndex;
-            this._dom.firstTabStop.tabIndex = -1;
-            this._dom.finalTabStop.tabIndex = -1;
-            _ElementUtilities._focusLastFocusableElement(this._dom.root);
-            this._dom.firstTabStop.tabIndex = firstTabIndex;
-            this._dom.finalTabStop.tabIndex = finalTabIndex;
+            _ElementUtilities._focusLastFocusableElement(this._dom.content);
         });
         _ElementUtilities._addEventListener(this._dom.finalTabStop, "focusin", () => {
-            var firstTabIndex = this._dom.firstTabStop.tabIndex;
-            var finalTabIndex = this._dom.finalTabStop.tabIndex;
-            this._dom.firstTabStop.tabIndex = -1;
-            this._dom.finalTabStop.tabIndex = -1;
-            _ElementUtilities._focusFirstFocusableElement(this._dom.root);
-            this._dom.firstTabStop.tabIndex = firstTabIndex;
-            this._dom.finalTabStop.tabIndex = finalTabIndex;
+            _ElementUtilities._focusFirstFocusableElement(this._dom.content);
         });
 
         // Exit the Init state.
@@ -511,20 +500,20 @@ export class _CommandingSurface {
         _ElementUtilities.addClass(root, _Constants.ClassNames.controlCssClass);
         _ElementUtilities.addClass(root, _Constants.ClassNames.disposableCssClass);
 
-        var firstTabStop = _Global.document.createElement("div");
-        _ElementUtilities.addClass(firstTabStop, _Constants.ClassNames.tabStop);
-        root.appendChild(firstTabStop);
+        var content = _Global.document.createElement("div");
+        _ElementUtilities.addClass(content, _Constants.ClassNames.contentClass);
+        root.appendChild(content);
 
         var actionArea = _Global.document.createElement("div");
         _ElementUtilities.addClass(actionArea, _Constants.ClassNames.actionAreaCssClass);
-        var actionAreaInsetOutline = document.createElement("DIV");
+        var actionAreaInsetOutline = document.createElement("div");
         _ElementUtilities.addClass(actionAreaInsetOutline, _Constants.ClassNames.insetOutlineClass);
         var actionAreaContainer = _Global.document.createElement("div");
         _ElementUtilities.addClass(actionAreaContainer, _Constants.ClassNames.actionAreaContainerCssClass);
 
         actionAreaContainer.appendChild(actionArea);
         actionAreaContainer.appendChild(actionAreaInsetOutline);
-        root.appendChild(actionAreaContainer);
+        content.appendChild(actionAreaContainer);
 
         var spacer = _Global.document.createElement("div");
         _ElementUtilities.addClass(spacer, _Constants.ClassNames.spacerCssClass);
@@ -549,22 +538,27 @@ export class _CommandingSurface {
 
         overflowAreaContainer.appendChild(overflowArea);
         overflowAreaContainer.appendChild(overflowInsetOutline);
-        root.appendChild(overflowAreaContainer);
+        content.appendChild(overflowAreaContainer);
+
+        var firstTabStop = _Global.document.createElement("div");
+        _ElementUtilities.addClass(firstTabStop, _Constants.ClassNames.tabStopClass);
+        root.insertBefore(firstTabStop, root.children[0]);
 
         var finalTabStop = _Global.document.createElement("div");
-        _ElementUtilities.addClass(finalTabStop, _Constants.ClassNames.tabStop);
+        _ElementUtilities.addClass(finalTabStop, _Constants.ClassNames.tabStopClass);
         root.appendChild(finalTabStop);
 
         this._dom = {
             root: root,
+            content: content,
             actionArea: actionArea,
             actionAreaContainer: actionAreaContainer,
-            firstTabStop: firstTabStop,
-            finalTabStop: finalTabStop,
             overflowArea: overflowArea,
             overflowAreaContainer: overflowAreaContainer,
             overflowButton: overflowButton,
             spacer: spacer,
+            firstTabStop: firstTabStop,
+            finalTabStop: finalTabStop,
         };
     }
 
@@ -692,10 +686,12 @@ export class _CommandingSurface {
         var highTabIndex = -1;
 
         if (this._isOpenedMode) {
-            var actionAreaIndex = _ElementUtilities._getHighAndLowTabIndices(this._dom.actionArea);
-            var overflowAreaIndex = _ElementUtilities._getHighAndLowTabIndices(this._dom.overflowArea);
-            lowTabIndex = Math.min(actionAreaIndex.lowest, overflowAreaIndex.lowest);
-            highTabIndex = Math.min(actionAreaIndex.highest, overflowAreaIndex.highest);
+            var tabIndices = _ElementUtilities._getHighAndLowTabIndices(this._dom.content);
+            lowTabIndex = tabIndices.lowest;
+            highTabIndex = tabIndices.highest;
+            //var overflowAreaIndex = _ElementUtilities._getHighAndLowTabIndices(this._dom.overflowArea);
+            //lowTabIndex = Math.min(actionAreaIndex.lowest, overflowAreaIndex.lowest);
+            //highTabIndex = Math.max(actionAreaIndex.highest, overflowAreaIndex.highest);
         }
 
         this._dom.firstTabStop.tabIndex = lowTabIndex;
