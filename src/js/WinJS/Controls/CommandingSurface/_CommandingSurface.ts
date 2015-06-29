@@ -579,13 +579,20 @@ export class _CommandingSurface {
             this._refreshPending = true;
 
             // Batch calls to _dataUpdated
-            Scheduler.schedule(() => {
+            this._batchDataUpdates(() => {
                 if (this._refreshPending && !this._disposed) {
                     this._refreshPending = false;
                     this._dataUpdated();
                 }
-            }, Scheduler.Priority.high, null, "WinJS.UI._CommandingSurface._refresh");
+            });
         }
+    }
+
+    // _batchDataUpdates is used by unit tests
+    _batchDataUpdates(updateFn: ()=> void): void {
+        Scheduler.schedule(() => {
+            updateFn();
+        }, Scheduler.Priority.high, null, "WinJS.UI._CommandingSurface._refresh");
     }
 
     private _addDataListeners() {

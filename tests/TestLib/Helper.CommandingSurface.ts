@@ -35,6 +35,12 @@ module Helper._CommandingSurface {
         };
     }
 
+    export function useSynchronousDataRendering(commandingSurface: WinJS.UI.PrivateCommandingSurface) {
+        commandingSurface._batchDataUpdates = (updateFn) => {
+            updateFn();
+        }
+    }
+
     export function getVisibleCommandsInElement(element: HTMLElement) {
         var result = [];
         var commands = element.querySelectorAll(_Constants.commandSelector);

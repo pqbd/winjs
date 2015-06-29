@@ -148,14 +148,14 @@ declare module WinJS {
                 stopPropagation(): void;
                 preventDefault(): void;
             }
-            
+
             export interface IKeyboardInfo {
                 type: string;
                 keyCode: number;
                 propagationStopped: boolean;
                 stopPropagation(): void;
             }
-            
+
             export interface ILightDismissService {
                 keyDown(client: ILightDismissable, eventObject: KeyboardEvent): void;
                 keyUp(client: ILightDismissable, eventObject: KeyboardEvent): void;
@@ -194,7 +194,7 @@ declare module WinJS {
                 _listSelectRestInverse,
                 _listSelectHoverInverse,
                 _listSelectPressInverse
-            } 
+            }
 
             export function createAccentRule(selector: string, props: { name: string; value: ColorTypes }[]);
 
@@ -258,7 +258,7 @@ declare module WinJS {
             _updateTabIndices();
             _updateTabIndicesImpl();
         }
-        
+
         interface ISplitViewDom {
             root: HTMLElement;
             pane: HTMLElement;
@@ -277,7 +277,7 @@ declare module WinJS {
                 paneOpened: string;
                 paneClosed: string;
             }
-            
+
             _dom: ISplitViewDom;
             _playShowAnimation(): Promise<any>;
             _playHideAnimation(): Promise<any>;
@@ -286,12 +286,12 @@ declare module WinJS {
             _disposed: boolean;
             _machine: IOpenCloseMachine
         }
-        
+
         class PrivateSplitViewPaneToggle extends WinJS.UI.SplitViewPaneToggle {
             static _ClassNames: {
                 splitViewPaneToggle: string;
             }
-            
+
             _onAriaExpandedPropertyChanged(mutations: IMutationRecordShim[]): void;
             _invoked(): void;
             _disposed: boolean;
@@ -500,6 +500,7 @@ declare module WinJS {
                 overflowAreaContainer: HTMLElement;
             };
             _machine: IOpenCloseMachine;
+            _batchDataUpdates(updateFn: () => void): void;
             _layoutCompleteCallback(): any;
             _canMeasure(): boolean;
             _menuCommandProjections: PrivateMenuCommand[];
@@ -549,8 +550,8 @@ declare module WinJS {
             _tooltipControl;
             _lastElementFocus;
             _propertyMutations: {
-                bind(callback:any): void;
-                unbind(callback:any): void;
+                bind(callback: any): void;
+                unbind(callback: any): void;
                 dispatchEvent(type: string, eventProperties: any): boolean;
             }
         }
