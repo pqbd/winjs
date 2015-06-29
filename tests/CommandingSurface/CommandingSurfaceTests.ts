@@ -353,7 +353,8 @@ module CorsicaTests {
             var primaryCommand = new Command(null, { section: 'primary', type: 'button', label: 'primary command', icon: '1' });
             var secondaryCommand = new Command(null, { section: 'secondary', type: 'button', label: 'secondary command' });
             var overflowCommand = new Command(null, { section: 'primary', type: 'content', label: 'overflow command', });
-            overflowCommand.element.style.width = (controlWidth + 5) + "px"; // Make it wide enough to always force overflow.
+            // Make the content command wide enough to always force overflow.
+            overflowCommand.element.style.width = (controlWidth + 5) + "px"; 
 
             var dataTestCases: Array<IOverflowButtonVisibilityTestCase> = [
                 { name: "NoCommands", commands: [], expectsOverflowCommands: false },
@@ -362,7 +363,6 @@ module CorsicaTests {
                 { name: "SecondaryCommandsOnly", commands: [secondaryCommand], expectsOverflowCommands: true },
                 { name: "PrimaryAndSecondaryCommands", commands: [primaryCommand, secondaryCommand], expectsOverflowCommands: true },
             ];
-
 
             Helper._CommandingSurface.useSynchronousAnimations(commandingSurface);
             Helper._CommandingSurface.useSynchronousDataRendering(commandingSurface);
