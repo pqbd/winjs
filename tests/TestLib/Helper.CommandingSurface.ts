@@ -36,6 +36,7 @@ module Helper._CommandingSurface {
     }
 
     export function useSynchronousDataRendering(commandingSurface: WinJS.UI.PrivateCommandingSurface) {
+        // Remove delay for batching edits, and render changes synchronously.
         commandingSurface._batchDataUpdates = (updateFn) => {
             updateFn();
         }
