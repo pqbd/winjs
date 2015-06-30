@@ -154,7 +154,7 @@ export class _CommandingSurface {
 
     // Dom elements
     private _dom: {
-        root: HTMLElement
+        root: HTMLElement;
         content: HTMLElement;
         actionArea: HTMLElement;
         actionAreaContainer: HTMLElement;
