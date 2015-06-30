@@ -1740,8 +1740,8 @@ module CorsicaTests {
                 '<button tabIndex="11" data-win-control="WinJS.UI.AppBarCommand" data-win-options="{type: \'toggle\', id:\'toggle\'}" ></button>' +
                 '<hr data-win-control="WinJS.UI.AppBarCommand" data-win-options="{type: \'separator\', id:\'separator\'}" \>' +
                 '<div tabIndex="1" id="contentCmd" data-win-control="WinJS.UI.AppBarCommand" data-win-options="{type: \'content\', id:\'content\'}" >' +
-                    '<input tabIndex="0" type="text" />' +
-                    '<input tabIndex="3" type ="range" / > ' +
+                '<input tabIndex="0" type="text" />' +
+                '<input tabIndex="3" type ="range" / > ' +
                 '</div>' +
                 '<button tabIndex="-1" data-win-control="WinJS.UI.AppBarCommand" data-win-options="{type: flyout, id:\'flyout\'}" ></button>';
 
@@ -1756,7 +1756,7 @@ module CorsicaTests {
             verifyTabIndices(commandingSurface, firstTabStopIndex, finalTabStopIndex);
         }
 
-        testTabIndiciesWhileOpened() {
+        testTabIndiciesWhileOpened(complete) {
             // Commanding surface should carousel tab key focus movement while opened.
 
             var innerHTML =
@@ -1785,17 +1785,21 @@ module CorsicaTests {
 
             LiveUnit.LoggingCore.logComment("Verify that 7 and 11 register as the lowest and highest tab" +
                 " indices after removing the content command.");
-
             var contentCommand = commandingSurface.getCommandById('contentCmd');
             var index = commandingSurface.data.indexOf(contentCommand);
-            commandingSurface.data.splice(index, 1);
+            Helper._CommandingSurface.completeAsyncLayout(commandingSurface, () => {
+                commandingSurface.data.splice(index, 1);
+            }).then(
+                () => {
+                    var firstTabStopIndex = 7;
+                    var finalTabStopIndex = 11;
 
-            var firstTabStopIndex = 7;
-            var finalTabStopIndex = 11;
+                    // Tab key will cause the commandingSurface to update its tab indices
+                    Helper.keydown(commandingSurface.element, WinJS.Utilities.Key.tab);
+                    verifyTabIndices(commandingSurface, firstTabStopIndex, finalTabStopIndex);
 
-            // Tab key will cause the commandingSurface to update its tab indices
-            Helper.keydown(commandingSurface.element, WinJS.Utilities.Key.tab);
-            verifyTabIndices(commandingSurface, firstTabStopIndex, finalTabStopIndex);
+                    complete();
+                });
         }
 
         testDomLevel0_OpenCloseEvents() {

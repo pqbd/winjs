@@ -21,7 +21,7 @@ module Helper._CommandingSurface {
     export function useSynchronousAnimations(commandingSurface: WinJS.UI.PrivateCommandingSurface) {
         commandingSurface.createOpenAnimation = function () {
             return {
-                execute(): WinJS.Promise<any> { 
+                execute(): WinJS.Promise<any> {
                     return WinJS.Promise.wrap();
                 }
             };
@@ -34,6 +34,23 @@ module Helper._CommandingSurface {
             };
         };
         commandingSurface._updateTabIndices = commandingSurface._updateTabIndicesImpl;
+    }
+
+    //export function useSynchronousDataRendering(commandingSurface: WinJS.UI.PrivateCommandingSurface) {
+    //    // Remove delay for batching edits, and render changes synchronously.
+    //    commandingSurface._batchDataUpdates = (updateFn) => {
+    //        updateFn();
+    //    }
+    //}
+
+    export function completeAsyncLayout(
+        commandingSurface: WinJS.UI.PrivateCommandingSurface,
+        updateLayoutFn: () => any
+        ): WinJS.Promise<any> {
+        return new WinJS.Promise((completeLayoutPromise) => {
+            commandingSurface._layoutCompleteCallback = completeLayoutPromise;
+            updateLayoutFn();
+        });
     }
 
     export function getVisibleCommandsInElement(element: HTMLElement) {
